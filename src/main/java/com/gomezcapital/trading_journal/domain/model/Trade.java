@@ -4,16 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-
 public record Trade(
-
     UUID id,
     UUID accountId,
     UUID strategyId,
     UUID playbookId,
     String asset,
-    String direction, // 'LONG o SHORT'
-    String status, // 'OPEN, CLOSED, CANCELLED'
+    String direction,
+    String status,
     LocalDateTime entryDate,
     LocalDateTime exitDate,
     BigDecimal entryPrice,
@@ -21,16 +19,14 @@ public record Trade(
     BigDecimal positionSize,
     BigDecimal takeProfit,
     BigDecimal stopLoss,
-    BigDecimal PlannedRr,
+    BigDecimal plannedRr,
     BigDecimal actualRr,
     BigDecimal mfePrice,
     BigDecimal maePrice,
     BigDecimal commissions,
-    BigDecimal feeAndSwaps,
+    BigDecimal feesAndSwaps,
     BigDecimal pnlGross,
     BigDecimal pnlNet,
     String notes
-
 ) {
-    
 }
