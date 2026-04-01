@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.gomezcapital.trading_journal.domain.ports.StoragePort;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,6 +25,7 @@ import java.util.UUID;
 public class TradeController {
 
     private final TradeService tradeService;
+    private final StoragePort storagePort;
 
     /**
      * Endpoint para CREAR un trade nuevo.
@@ -125,4 +128,30 @@ public class TradeController {
         TradeResponse response = toResponseDto(closedTrade);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * Endpoint para SUBIR una captura de pantalla a un Trade específico.
+     * Método HTTP: POST
+     * URL: http://localhost:8080/api/v1/trades/{tradeId}/image
+     */
+    @PostMapping("/{tradeId}/image")
+    public ResponseEntity<String> uploadImage(
+        @PathVariable String tradeId,
+        @RequestParam("file") MultipartFile file) {
+
+            log.info("API REST: Peticion recibida para subir imagen al trade: {}", tradeId);
+
+            // Validar que el archivo no este vacio
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("El archivo esta vacio.");
+
+            }
+
+            // Delegar el guardado a nuestro adaptador a traves del puerto
+            String imagePath = storagePort.uploadTradeImage(tradeId, file);
+
+            return ResponseEntity.ok("Imagen subida con exito. Ruta: " + imagePath);
+
+        }
+    
 }
