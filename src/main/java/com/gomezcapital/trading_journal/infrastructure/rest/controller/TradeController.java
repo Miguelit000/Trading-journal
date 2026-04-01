@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.gomezcapital.trading_journal.domain.ports.StoragePort;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -153,5 +156,32 @@ public class TradeController {
             return ResponseEntity.ok("Imagen subida con exito. Ruta: " + imagePath);
 
         }
+
+    /**
+     * Endpoint para DESCARGAR/VER la imagen de un trade.
+     * Método HTTP: GET
+     * URL: http://localhost:8080/api/v1/trades/images/{filename}
+     */
+    @GetMapping("/images/{filename:.+}")
+    public ResponseEntity<Resource> getImage(@PathVariable String filename) {
+        log.info("API REST: Petición para visualizar imagen: {}", filename);
+        
+        Resource file = storagePort.loadTradeImage(filename);
+
+        // Detectar si es PNG o JPG para que el navegador sepa cómo dibujarla
+        String contentType = "application/octet-stream"; // Por defecto (descarga genérica)
+        if (filename.toLowerCase().endsWith(".png")) {
+            contentType = MediaType.IMAGE_PNG_VALUE;
+        } else if (filename.toLowerCase().matches(".*\\.(jpg|jpeg)$")) {
+            contentType = MediaType.IMAGE_JPEG_VALUE;
+        }
+
+        return ResponseEntity.ok()
+                // Le decimos al cliente qué tipo de archivo es
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                // Le indicamos al navegador que la muestre en pantalla (inline) en lugar de descargarla a la fuerza
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
+                .body(file);
+    }
     
 }

@@ -4,6 +4,8 @@ import com.gomezcapital.trading_journal.domain.ports.StoragePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +60,29 @@ public class LocalFileStorageAdapter implements StoragePort {
             log.error("Error al guardar la imagen del trade {}", tradeId, e);
             throw new RuntimeException("No se pudo procesar la subida de la imagen.");
         }
+    }
+
+    @Override
+    public Resource loadTradeImage(String filename) {
+
+        try {
+
+            // Ruta exacta del archivo
+            Path file = Paths.get(UPLOAD_DIR).resolve(filename).normalize();
+            Resource resource = new UrlResource(file.toUri());
+
+            // verificar si el archivo existe y si tenemos permiso
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            } else {
+                log.error("No se pudo leer el archivo: {}", filename);
+                throw new RuntimeException("No se pudo leer el archivo: " + filename);   
+            }
+        
+        } catch (Exception e) {
+            log.error("Error al recuperar la imagen: {}", filename, e);
+            throw new RuntimeException("Error al recuperar la imagen", e);
+        } 
     }
 
 
