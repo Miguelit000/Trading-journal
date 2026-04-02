@@ -37,6 +37,7 @@ public class SecurityConfig {
             // Reglas de las URLs
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**").permitAll() // Rutas de Login/Rgistro son publicas
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated() // Cualrquier otra ruta exige token valido
 
             )

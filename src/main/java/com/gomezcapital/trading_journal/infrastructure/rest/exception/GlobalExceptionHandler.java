@@ -54,6 +54,8 @@ public class GlobalExceptionHandler {
     // Atrapa cualquier otro Error no planificado
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+
+
         ErrorResponse error = new ErrorResponse(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "Ocurrio un error interno en el servidor",
