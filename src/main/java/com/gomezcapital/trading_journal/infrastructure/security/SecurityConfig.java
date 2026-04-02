@@ -11,7 +11,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.List;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -23,6 +27,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securirtyFilterChain(HttpSecurity http) throws Exception {
         http
+
+            // Activacion del CORS
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
             // Desactivamos CSFR 
             .csrf(AbstractHttpConfigurer::disable)
@@ -45,6 +52,27 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
+    }
+
+   @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+        
+        // Quien puede entrar
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173"));
+
+        // Metodos HTTP 
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        // Autorizacion de tokens
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        
+        // Aplicar las reglas a toda la API
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
     }
 
     @Bean 
