@@ -63,7 +63,8 @@ public class TradeController {
                 BigDecimal.ZERO, // feesAndSwaps
                 BigDecimal.ZERO, // pnlGross
                 BigDecimal.ZERO, // pnlNet
-                request.notes()
+                request.notes(),
+                null
         );
 
         // 2. Procesar con el Servicio (Las reglas de negocio)
@@ -105,7 +106,8 @@ public class TradeController {
                 trade.entryDate(),
                 trade.entryPrice(),
                 trade.positionSize(),
-                trade.pnlNet()
+                trade.pnlNet(),
+                trade.imageName()
         );
     }
 
@@ -139,22 +141,22 @@ public class TradeController {
      */
     @PostMapping("/{tradeId}/image")
     public ResponseEntity<String> uploadImage(
-        @PathVariable String tradeId,
+        @PathVariable UUID tradeId, 
         @RequestParam("file") MultipartFile file) {
 
-            log.info("API REST: Peticion recibida para subir imagen al trade: {}", tradeId);
+            log.info("API REST: Petición recibida para subir imagen al trade: {}", tradeId);
 
-            // Validar que el archivo no este vacio
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("El archivo esta vacio.");
-
+                return ResponseEntity.badRequest().body("El archivo está vacío.");
             }
 
-            // Delegar el guardado a nuestro adaptador a traves del puerto
-            String imagePath = storagePort.uploadTradeImage(tradeId, file);
+            // 1. Guardamos el archivo físico y obtenemos el nombre final
+            String fileName = storagePort.uploadTradeImage(tradeId.toString(), file);
 
-            return ResponseEntity.ok("Imagen subida con exito. Ruta: " + imagePath);
+            // 2. Le avisamos a PostgreSQL para que asocie el trade con la imagen
+            tradeService.updateTradeImage(tradeId, fileName);
 
+            return ResponseEntity.ok("Imagen subida con éxito.");
         }
 
     /**
@@ -183,5 +185,5 @@ public class TradeController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
                 .body(file);
     }
-    
+
 }

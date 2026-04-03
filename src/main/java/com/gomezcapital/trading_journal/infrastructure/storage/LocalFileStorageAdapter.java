@@ -54,7 +54,7 @@ public class LocalFileStorageAdapter implements StoragePort {
             log.info("Imagen guardada exitosamente en: {}", filePath);
 
             // Devolver la ruta relativa
-            return filePath.toString();
+            return newFileName;
 
         } catch (IOException e) {
             log.error("Error al guardar la imagen del trade {}", tradeId, e);

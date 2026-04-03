@@ -87,6 +87,9 @@ public class TradeEntity {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "image_name")
+    private String imageName;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

@@ -27,6 +27,7 @@ public record Trade(
     BigDecimal feesAndSwaps,
     BigDecimal pnlGross,
     BigDecimal pnlNet,
-    String notes
+    String notes,
+    String imageName
 ) {
 }

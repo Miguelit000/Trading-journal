@@ -14,7 +14,8 @@ public record TradeResponse(
     LocalDateTime entryDate,
     BigDecimal entryPrice,
     BigDecimal positionSize,
-    BigDecimal pnlNet
+    BigDecimal pnlNet,
+    String imageName
 ) {
     
 }

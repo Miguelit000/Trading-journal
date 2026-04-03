@@ -60,7 +60,8 @@ public class TradeService {
                 defaultToZero(trade.feesAndSwaps()),
                 BigDecimal.ZERO, // pnlGross al abrir siempre es 0
                 BigDecimal.ZERO, // pnlNet al abrir siempre es 0
-                trade.notes()
+                trade.notes(),
+                null
         );
 
         Trade savedTrade = tradeRepositoryPort.save(tradeToSave);
@@ -99,10 +100,28 @@ public class TradeService {
                 existingTrade.commissions(), existingTrade.feesAndSwaps(), 
                 pnlGross, 
                 pnlGross.subtract(defaultToZero(existingTrade.commissions())).subtract(defaultToZero(existingTrade.feesAndSwaps())), 
-                existingTrade.notes()
+                existingTrade.notes(),
+                existingTrade.imageName()
         );
 
         return tradeRepositoryPort.save(closedTrade);
+    }
+
+    public void updateTradeImage(UUID tradeId, String imageName) {
+        Trade existingTrade = tradeRepositoryPort.findById(tradeId)
+                .orElseThrow(() -> new IllegalArgumentException("El trade no existe."));
+
+        Trade updatedTrade = new Trade(
+                existingTrade.id(), existingTrade.accountId(), existingTrade.strategyId(), existingTrade.playbookId(),
+                existingTrade.asset(), existingTrade.direction(), existingTrade.status(),
+                existingTrade.entryDate(), existingTrade.exitDate(), existingTrade.entryPrice(), existingTrade.exitPrice(),
+                existingTrade.positionSize(), existingTrade.takeProfit(), existingTrade.stopLoss(),
+                existingTrade.plannedRr(), existingTrade.actualRr(), existingTrade.mfePrice(), existingTrade.maePrice(), 
+                existingTrade.commissions(), existingTrade.feesAndSwaps(), 
+                existingTrade.pnlGross(), existingTrade.pnlNet(), existingTrade.notes(),
+                imageName // <--- Le inyectamos el nombre de la foto guardada
+        );
+        tradeRepositoryPort.save(updatedTrade);
     }
 
     // ==========================================

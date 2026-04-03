@@ -1,8 +1,11 @@
 package com.gomezcapital.trading_journal.infrastructure.rest.dto;
 
-// Solo devolvemos el token, el frontend lo guardara en el localstorage o cookies
+import java.util.UUID;
+
+
 public record AuthenticationResponse(
-    String token
+    String token,
+    UUID accountId
 ) {
     
 }

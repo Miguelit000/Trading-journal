@@ -80,6 +80,7 @@ public class TradeRepositoryAdapter implements TradeRepositoryPort {
                 .pnlGross(trade.pnlGross())
                 .pnlNet(trade.pnlNet())
                 .notes(trade.notes())
+                .imageName(trade.imageName())
                 .build();
     }
 
@@ -110,7 +111,8 @@ public class TradeRepositoryAdapter implements TradeRepositoryPort {
                 null, // feesAndSwaps
                 entity.getPnlGross(),
                 entity.getPnlNet(),
-                entity.getNotes()
+                entity.getNotes(),
+                entity.getImageName()
         );
     }
 }
