@@ -84,7 +84,7 @@ public class TradeController {
     public ResponseEntity<List<TradeResponse>> getTradesByAccount(@PathVariable UUID accountId) {
         log.info("API REST: Solicitando trades de la cuenta: {}", accountId);
         
-        List<Trade> trades = tradeService.getTradesByAccount(accountId);
+        List<Trade> trades = tradeService.getTradesByAccountId(accountId);
         
         List<TradeResponse> responseList = trades.stream()
                 .map(this::toResponseDto)
@@ -184,6 +184,42 @@ public class TradeController {
                 // Le indicamos al navegador que la muestre en pantalla (inline) en lugar de descargarla a la fuerza
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
                 .body(file);
+    }
+
+    @GetMapping("/account/{accountId}/export/csv")
+    public ResponseEntity<byte[]> exportTradesToCsv(@PathVariable UUID accountId) {
+        log.info("API REST: Exportando trades a CSV para la cuenta: {}", accountId);
+        
+        // 1. Buscamos todas las operaciones
+        List<Trade> trades = tradeService.getTradesByAccountId(accountId);
+        
+        // 2. Construimos el archivo CSV en memoria
+        StringBuilder csv = new StringBuilder();
+        // Cabeceras del Excel
+        csv.append("ID,Fecha Entrada,Activo,Direccion,Precio Entrada,Tamano,Estado,PnL Neto,Notas\n");
+        
+        // Filas de datos
+        for (Trade trade : trades) {
+            csv.append(trade.id()).append(",")
+               .append(trade.entryDate()).append(",")
+               .append(trade.asset()).append(",")
+               .append(trade.direction()).append(",")
+               .append(trade.entryPrice()).append(",")
+               .append(trade.positionSize()).append(",")
+               .append(trade.status()).append(",")
+               .append(trade.pnlNet() != null ? trade.pnlNet() : "0.00").append(",")
+               // Limpiamos las comas de las notas para no romper el Excel
+               .append(trade.notes() != null ? trade.notes().replace(",", " ") : "").append("\n");
+        }
+        
+        byte[] csvBytes = csv.toString().getBytes();
+        
+        // 3. Le decimos al navegador web que esto es un archivo descargable
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.set(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=historial_operaciones.csv");
+        headers.set(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/csv");
+        
+        return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
     }
 
 }

@@ -70,7 +70,7 @@ public class TradeService {
         return savedTrade;
     }
 
-    public List<Trade> getTradesByAccount(UUID accountId) {
+    public List<Trade> getTradesByAccountId(UUID accountId) {
         log.debug("Buscando trades para la cuenta: {}", accountId);
         return tradeRepositoryPort.findByAccountId(accountId);
     }
