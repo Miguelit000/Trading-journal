@@ -79,7 +79,7 @@ public class TradeService {
         return tradeRepositoryPort.findById(tradeId);
     }
 
-    public Trade closeTrade(UUID tradeId, BigDecimal exitPrice, LocalDateTime exitDate) {
+    public Trade closeTrade(UUID tradeId, BigDecimal exitPrice, LocalDateTime exitDate, BigDecimal pnlNet) {
         log.info("Cerrando trade con ID: {} a precio: {}", tradeId, exitPrice);
 
         Trade existingTrade = tradeRepositoryPort.findById(tradeId)
@@ -89,7 +89,8 @@ public class TradeService {
             throw new IllegalStateException("El trade ya se encuentra cerrado.");
         }
 
-        BigDecimal pnlGross = calculatePnL(existingTrade.direction(), existingTrade.entryPrice(), exitPrice, existingTrade.positionSize());
+        // Ya no calculamos matemáticamente, usamos el valor que el trader ingresó
+        BigDecimal finalPnl = pnlNet != null ? pnlNet : BigDecimal.ZERO;
 
         Trade closedTrade = new Trade(
                 existingTrade.id(), existingTrade.accountId(), existingTrade.strategyId(), existingTrade.playbookId(),
@@ -98,13 +99,53 @@ public class TradeService {
                 existingTrade.positionSize(), existingTrade.takeProfit(), existingTrade.stopLoss(),
                 existingTrade.plannedRr(), existingTrade.actualRr(), existingTrade.mfePrice(), existingTrade.maePrice(), 
                 existingTrade.commissions(), existingTrade.feesAndSwaps(), 
-                pnlGross, 
-                pnlGross.subtract(defaultToZero(existingTrade.commissions())).subtract(defaultToZero(existingTrade.feesAndSwaps())), 
+                finalPnl, // pnlGross
+                finalPnl, // pnlNet real ingresado por el usuario
                 existingTrade.notes(),
                 existingTrade.imageName()
         );
 
         return tradeRepositoryPort.save(closedTrade);
+    }
+
+    public Trade updateTrade(UUID tradeId, com.gomezcapital.trading_journal.infrastructure.rest.dto.UpdateTradeRequest request) {
+        log.info("Actualizando trade con ID: {}", tradeId);
+
+        Trade existingTrade = tradeRepositoryPort.findById(tradeId)
+                .orElseThrow(() -> new IllegalArgumentException("El trade con ID " + tradeId + " no existe."));
+
+        if (request.entryPrice() == null || request.entryPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El precio de entrada debe ser mayor a 0.");
+        }
+
+        Trade updatedTrade = new Trade(
+                existingTrade.id(), 
+                existingTrade.accountId(), 
+                request.strategyId(), 
+                existingTrade.playbookId(),
+                request.asset().toUpperCase(), 
+                request.direction(), 
+                existingTrade.status(),
+                existingTrade.entryDate(), 
+                existingTrade.exitDate(), 
+                request.entryPrice(), 
+                request.exitPrice(), // <-- CAMBIO: Toma el nuevo precio de salida
+                request.positionSize(), 
+                request.takeProfit(), 
+                request.stopLoss(),
+                existingTrade.plannedRr(), 
+                existingTrade.actualRr(), 
+                existingTrade.mfePrice(), 
+                existingTrade.maePrice(), 
+                existingTrade.commissions(), 
+                existingTrade.feesAndSwaps(), 
+                request.pnlNet() != null ? request.pnlNet() : existingTrade.pnlGross(), // <-- CAMBIO
+                request.pnlNet() != null ? request.pnlNet() : existingTrade.pnlNet(),   // <-- CAMBIO
+                request.notes(),
+                existingTrade.imageName()
+        );
+
+        return tradeRepositoryPort.save(updatedTrade);
     }
 
     public void updateTradeImage(UUID tradeId, String imageName) {
@@ -137,14 +178,6 @@ public class TradeService {
             log.error("Error de validación: El tamaño de la posición debe ser mayor a 0.");
             throw new IllegalArgumentException("El tamaño de la posición debe ser mayor a 0.");
         }
-    }
-
-    private BigDecimal calculatePnL(String direction, BigDecimal entryPrice, BigDecimal exitPrice, BigDecimal positionSize) {
-        BigDecimal priceDifference = "LONG".equalsIgnoreCase(direction) 
-                ? exitPrice.subtract(entryPrice) 
-                : entryPrice.subtract(exitPrice);
-                
-        return priceDifference.multiply(positionSize);
     }
 
     // HELPER: Garantiza que un valor nulo se convierta en 0 matemáticamente seguro.

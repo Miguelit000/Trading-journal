@@ -126,12 +126,27 @@ public class TradeController {
         // Si el frontend no nos manda una fecha exacta de cierre, tomamos la hora actual
         LocalDateTime exitDate = request.exitDate() != null ? request.exitDate() : LocalDateTime.now();
 
-        // Llamamos a nuestro Servicio para que aplique las reglas de negocio y las matemáticas
-        Trade closedTrade = tradeService.closeTrade(tradeId, request.exitPrice(), exitDate);
+        // <-- CAMBIO CLAVE: Pasamos el request.pnlNet() al servicio -->
+        Trade closedTrade = tradeService.closeTrade(
+                tradeId, 
+                request.exitPrice(), 
+                exitDate, 
+                request.pnlNet() 
+        );
 
         // Convertimos el resultado a DTO y lo devolvemos
         TradeResponse response = toResponseDto(closedTrade);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{tradeId}")
+    public ResponseEntity<TradeResponse> updateTrade(
+            @PathVariable UUID tradeId,
+            @RequestBody com.gomezcapital.trading_journal.infrastructure.rest.dto.UpdateTradeRequest request) {
+        
+        log.info("API REST: Petición recibida para actualizar el trade: {}", tradeId);
+        Trade updatedTrade = tradeService.updateTrade(tradeId, request);
+        return ResponseEntity.ok(toResponseDto(updatedTrade));
     }
 
     /**
