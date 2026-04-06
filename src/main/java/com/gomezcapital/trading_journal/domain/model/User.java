@@ -6,7 +6,8 @@ public record User(
 
     UUID id,
     String email,
-    String passwordHash
+    String passwordHash,
+    String alias
 ) {
     
 }

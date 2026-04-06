@@ -2,6 +2,7 @@ package com.gomezcapital.trading_journal.infrastructure.rest.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 // Solo devolvemos la informacion que necesita en la pantalla
@@ -15,7 +16,7 @@ public record TradeResponse(
     BigDecimal entryPrice,
     BigDecimal positionSize,
     BigDecimal pnlNet,
-    String imageName
+    List<String> images
 ) {
     
 }

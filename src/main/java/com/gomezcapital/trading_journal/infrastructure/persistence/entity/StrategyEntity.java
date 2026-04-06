@@ -17,8 +17,8 @@ public class StrategyEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "account_id", nullable = false)
-    private UUID accountId;
+    @Column(name = "portafolio_id", nullable = false)
+    private UUID portfolioId;
 
     @Column(nullable = false)
     private String name;

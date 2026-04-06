@@ -2,7 +2,6 @@ package com.gomezcapital.trading_journal.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,8 +20,8 @@ public class TradeEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
-    private AccountEntity account;
+    @JoinColumn(name = "portfolio_id", nullable = false)
+    private PortfolioEntity portfolio;
 
     @Column(name = "strategy_id")
     private UUID strategyId;
@@ -86,9 +85,6 @@ public class TradeEntity {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
-
-    @Column(name = "image_name")
-    private String imageName;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

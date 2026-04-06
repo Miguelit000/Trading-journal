@@ -13,7 +13,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-
 public class StrategyService {
 
     private final StrategyRepositoryPort strategyRepositoryPort;
@@ -21,14 +20,13 @@ public class StrategyService {
     public Strategy creatStrategy(CreateStrategyRequest request) {
         log.info("Creando nueva estrategia: {}", request.name());
         Strategy newStrategy = new Strategy(
-            null, request.accountId(), request.name(), request.description(), request.rules()
-
+            null, request.portfolioId(), request.name(), request.description(), request.rules()
         );
         return strategyRepositoryPort.save(newStrategy);
     }
 
-    public List<Strategy> getStrategiesByAccountId(UUID accountId) {
-        return strategyRepositoryPort.findByAccountId(accountId);
+    // <-- AQUÍ ESTABA EL ERROR: El método ya tiene el nombre correcto
+    public List<Strategy> getStrategiesByPortfolioId(UUID portfolioId) {
+        return strategyRepositoryPort.findByPortfolioId(portfolioId);
     }
-    
 }

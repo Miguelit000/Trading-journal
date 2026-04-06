@@ -5,7 +5,7 @@ import java.util.UUID;
 public record Strategy(
 
     UUID id,
-    UUID accountId,
+    UUID portfolioId,
     String name,
     String description,
     String rules

@@ -8,6 +8,6 @@ import java.util.UUID;
 public interface StrategyRepositoryPort {
 
     Strategy save(Strategy strategy);
-    List<Strategy> findByAccountId(UUID accountId);
+    List<Strategy> findByPortfolioId(UUID portfolioId);
     
 }

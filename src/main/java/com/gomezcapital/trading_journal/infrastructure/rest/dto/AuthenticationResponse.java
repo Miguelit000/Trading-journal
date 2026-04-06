@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public record AuthenticationResponse(
     String token,
-    UUID accountId
+    UUID portfolioId
 ) {
     
 }

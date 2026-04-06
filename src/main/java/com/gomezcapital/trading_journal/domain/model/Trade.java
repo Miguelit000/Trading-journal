@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record Trade(
     UUID id,
-    UUID accountId,
+    UUID portfolioId,
     UUID strategyId,
     UUID playbookId,
     String asset,
@@ -27,7 +27,6 @@ public record Trade(
     BigDecimal feesAndSwaps,
     BigDecimal pnlGross,
     BigDecimal pnlNet,
-    String notes,
-    String imageName
+    String notes
 ) {
 }

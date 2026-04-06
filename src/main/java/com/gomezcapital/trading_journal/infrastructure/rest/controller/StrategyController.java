@@ -17,7 +17,6 @@ import java.util.UUID;
 @RequestMapping("/api/v1/strategies")
 @RequiredArgsConstructor
 @Slf4j
-
 public class StrategyController {
 
     private final StrategyService strategyService;
@@ -26,21 +25,20 @@ public class StrategyController {
     public ResponseEntity<StrategyResponse> createStrategy(@RequestBody CreateStrategyRequest request) {
         Strategy strategy = strategyService.creatStrategy(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDto(strategy));
-
     }
 
-    @GetMapping("/account/{accountId}")
-    public ResponseEntity<List<StrategyResponse>> getStrategiesByAccount(@PathVariable UUID accountId) {
-        List<Strategy> strategies = strategyService.getStrategiesByAccountId(accountId);
+    // <-- Endpoint actualizado a /portfolio/{portfolioId}
+    @GetMapping("/portfolio/{portfolioId}")
+    public ResponseEntity<List<StrategyResponse>> getStrategiesByAccount(@PathVariable UUID portfolioId) {
+        List<Strategy> strategies = strategyService.getStrategiesByPortfolioId(portfolioId);
         List<StrategyResponse> responseList = strategies.stream().map(this::toResponseDto).toList();
         return ResponseEntity.ok(responseList);
     }
 
     private StrategyResponse toResponseDto(Strategy strategy) {
         return new StrategyResponse(
-            strategy.id(), strategy.accountId(),
+            strategy.id(), strategy.portfolioId(),
             strategy.name(), strategy.description(), strategy.rules()
         );
     }
-    
 }

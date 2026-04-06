@@ -2,7 +2,7 @@ package com.gomezcapital.trading_journal.infrastructure.persistence.adapter;
 
 import com.gomezcapital.trading_journal.domain.model.Trade;
 import com.gomezcapital.trading_journal.domain.ports.TradeRepositoryPort;
-import com.gomezcapital.trading_journal.infrastructure.persistence.entity.AccountEntity;
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.PortfolioEntity;
 import com.gomezcapital.trading_journal.infrastructure.persistence.entity.TradeEntity;
 import com.gomezcapital.trading_journal.infrastructure.persistence.repository.TradeJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,34 +12,28 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Component // Crea una instancia y la mantiene lista
-@RequiredArgsConstructor // Inyecta el JpaRepository automáticamente
+@Component
+@RequiredArgsConstructor
 public class TradeRepositoryAdapter implements TradeRepositoryPort {
 
     private final TradeJpaRepository tradeJpaRepository;
 
     @Override
     public Trade save(Trade trade) {
-        // Traducir de Dominio (Record) a Infraestructura (Entity)
         TradeEntity entity = toEntity(trade);
-        
-        // Guardar en PostgreSQL usando Spring Data JPA
         TradeEntity savedEntity = tradeJpaRepository.save(entity);
-        
-        // Traducir de vuelta al Dominio y retornarlo
         return toDomain(savedEntity);
     }
 
     @Override
     public Optional<Trade> findById(UUID id) {
-        return tradeJpaRepository.findById(id)
-                .map(this::toDomain); // Si lo encuentra, lo traduce
+        return tradeJpaRepository.findById(id).map(this::toDomain);
     }
 
     @Override
-    public List<Trade> findByAccountId(UUID accountId) {
-        return tradeJpaRepository.findByAccount_Id(accountId).stream()
-                .map(this::toDomain) // Traduce la lista entera
+    public List<Trade> findByPortfolioId(UUID portfolioId) { // <-- CAMBIO
+        return tradeJpaRepository.findByPortfolioId(portfolioId).stream()
+                .map(this::toDomain)
                 .toList();
     }
 
@@ -48,23 +42,18 @@ public class TradeRepositoryAdapter implements TradeRepositoryPort {
         tradeJpaRepository.deleteById(id);
     }
 
-    // ==========================================
-    // MÉTODOS PRIVADOS DE TRADUCCIÓN (MAPPERS)
-    // ==========================================
-
     private TradeEntity toEntity(Trade trade) {
         if (trade == null) return null;
 
-        AccountEntity accountReference = null;
-        if (trade.accountId() != null) {
-            accountReference = new AccountEntity();
-            accountReference.setId(trade.accountId());
+        PortfolioEntity portfolioRef = null;
+        if (trade.portfolioId() != null) {
+            portfolioRef = new PortfolioEntity();
+            portfolioRef.setId(trade.portfolioId());
         }
         
-        // Usamos el patrón Builder de Lombok que le pusimos a TradeEntity
         return TradeEntity.builder()
                 .id(trade.id())
-                .account(accountReference) 
+                .portfolio(portfolioRef) // <-- CAMBIO
                 .strategyId(trade.strategyId())
                 .playbookId(trade.playbookId())
                 .asset(trade.asset())
@@ -80,17 +69,16 @@ public class TradeRepositoryAdapter implements TradeRepositoryPort {
                 .pnlGross(trade.pnlGross())
                 .pnlNet(trade.pnlNet())
                 .notes(trade.notes())
-                .imageName(trade.imageName())
+                // ELIMINADO imageName
                 .build();
     }
 
     private Trade toDomain(TradeEntity entity) {
         if (entity == null) return null;
 
-        // Creamos el record 
         return new Trade(
                 entity.getId(),
-                entity.getAccount() != null ? entity.getAccount().getId() : null,
+                entity.getPortfolio() != null ? entity.getPortfolio().getId() : null, // <-- CAMBIO
                 entity.getStrategyId(),
                 entity.getPlaybookId(),
                 entity.getAsset(),
@@ -103,16 +91,16 @@ public class TradeRepositoryAdapter implements TradeRepositoryPort {
                 entity.getPositionSize(),
                 entity.getTakeProfit(),
                 entity.getStopLoss(),
-                null, // plannedRr
-                null, // actualRr
-                null, // mfePrice
-                null, // maePrice
-                null, // commissions
-                null, // feesAndSwaps
+                entity.getPlannedRr(), 
+                entity.getActualRr(), 
+                entity.getMfePrice(), 
+                entity.getMaePrice(), 
+                entity.getCommissions(), 
+                entity.getFeesAndSwaps(),
                 entity.getPnlGross(),
                 entity.getPnlNet(),
-                entity.getNotes(),
-                entity.getImageName()
+                entity.getNotes()
+                // ELIMINADO imageName
         );
     }
 }

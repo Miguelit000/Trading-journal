@@ -7,6 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface StrategyJpaRepository extends JpaRepository<StrategyEntity, UUID> {
-    List<StrategyEntity> findByAccountId(UUID accountId);
+    List<StrategyEntity> findByPortfolioId(UUID portfolioId);
     
 }

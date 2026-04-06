@@ -2,26 +2,24 @@ package com.gomezcapital.trading_journal.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "accounts")
+@Table(name = "portfolios")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 
-public class AccountEntity {
+public class PortfolioEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    // Despues se mapea con userentity
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
@@ -40,11 +38,11 @@ public class AccountEntity {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // JPA guarda automaticamente la feecha de creacion
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
     }
+    
 }

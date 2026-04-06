@@ -16,23 +16,20 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-
 public class AnalyticsService {
 
     private final TradeRepositoryPort tradeRepositoryPort;
 
-    public TradeMetrics calculateAccountMetrics(UUID accountId) {
-        log.info("Calculando metricas para el dashboard de la cuenta: {}", accountId);
+    public TradeMetrics calculateAccountMetrics(UUID portfolioId) {
+        log.info("Calculando metricas para el dashboard del portafolio: {}", portfolioId);
 
-        // 1. Obtener todos los trades de la cuenta
-        List<Trade> allTrades = tradeRepositoryPort.findByAccountId(accountId);
+        // <-- Llama al nuevo método del repositorio usando portfolioId
+        List<Trade> allTrades = tradeRepositoryPort.findByPortfolioId(portfolioId);
 
-        // 2. Filtrar unicamente los trades cerrados
         List<Trade> closedTrades = allTrades.stream()
                 .filter(trade -> "CLOSED".equals(trade.status()))
                 .toList();
 
-        // Si no hay operaciones cerradas, devolvemos todo en cero para no romper el fronted
         if (closedTrades.isEmpty()) {
             return new TradeMetrics(0, 0, 0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
         }    
@@ -44,7 +41,6 @@ public class AnalyticsService {
         BigDecimal grossLoss = BigDecimal.ZERO;
         BigDecimal totalPnl = BigDecimal.ZERO;
 
-        // 3. iterar sobre los trades para sumar las ganancia y perdidas
         for (Trade trade : closedTrades) {
             BigDecimal pnl = trade.pnlNet() != null ? trade.pnlNet() : BigDecimal.ZERO;
             totalPnl = totalPnl.add(pnl);
@@ -58,15 +54,12 @@ public class AnalyticsService {
             }
         }
 
-        // 4. Calcular Win Rate: (GANADORAS/TOTALES) * 100
         BigDecimal winRate = BigDecimal.valueOf((double) winningTrades / totalTrades * 100)
                 .setScale(2, RoundingMode.HALF_UP);
 
-        // 5. Calcular Profit Factor: (Ganancia Bruta / Perdida Bruta)
-        // Evita dividir por cero si el trade no tiene perdidas
         BigDecimal profitFactor;
         if (grossLoss.compareTo(BigDecimal.ZERO) == 0) {
-            profitFactor = grossProfit; // Si no hay ganancias el PF es igual a la ganancia
+            profitFactor = grossProfit; 
         } else {
             profitFactor = grossProfit.divide(grossLoss, 2, RoundingMode.HALF_UP);
         }

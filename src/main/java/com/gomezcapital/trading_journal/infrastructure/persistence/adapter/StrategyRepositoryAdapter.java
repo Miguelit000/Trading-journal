@@ -21,7 +21,7 @@ public class StrategyRepositoryAdapter implements StrategyRepositoryPort {
     public Strategy save(Strategy strategy) {
         StrategyEntity entity = StrategyEntity.builder()
                 .id(strategy.id())
-                .accountId(strategy.accountId())
+                .portfolioId(strategy.portfolioId())
                 .name(strategy.name())
                 .description(strategy.description())
                 .rules(strategy.rules())
@@ -30,16 +30,16 @@ public class StrategyRepositoryAdapter implements StrategyRepositoryPort {
         StrategyEntity savedEntity = repository.save(entity);
 
         return new Strategy(
-            savedEntity.getId(), savedEntity.getAccountId(),
+            savedEntity.getId(), savedEntity.getPortfolioId(),
             savedEntity.getName(), savedEntity.getDescription(), savedEntity.getRules()
         );
     }
 
     @Override
-    public List<Strategy> findByAccountId(UUID accountId) {
-        return repository.findByAccountId(accountId).stream()
+    public List<Strategy> findByPortfolioId(UUID portfolioId) {
+        return repository.findByPortfolioId(portfolioId).stream()
                 .map(entity -> new Strategy(
-                    entity.getId(), entity.getAccountId(),
+                    entity.getId(), entity.getPortfolioId(),
                     entity.getName(), entity.getDescription(),entity.getRules()
                 )).toList();
     }

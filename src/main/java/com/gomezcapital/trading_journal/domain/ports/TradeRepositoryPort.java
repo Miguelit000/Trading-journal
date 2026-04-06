@@ -6,16 +6,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TradeRepositoryPort {
-    // Guarda un trade nuevo o actualiza uno existente
+   
     Trade save(Trade trade);
-
-    // Busca un trade especifico por Id
-    // Usamos Optional porque podria no existir en la base de datos
     Optional<Trade> findById(UUID id);
-
-    // Trae todos los trades de una cuenta especifica
-    List<Trade> findByAccountId(UUID accountId);
-
-    // Elimina un trade
+    List<Trade> findByPortfolioId(UUID portfolioId);
     void deleteById(UUID id);
 }

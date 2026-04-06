@@ -20,7 +20,8 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
         UserEntity entity = new UserEntity(
                 user.id(),
                 user.email(),
-                user.passwordHash()
+                user.passwordHash(),
+                user.alias()
         );
         UserEntity savedEntity = jpaUserRepository.save(entity);
         return toDomain(savedEntity);
@@ -46,7 +47,8 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
         return new User(
             entity.getId(),
             entity.getEmail(),
-            entity.getPasswordHash()
+            entity.getPasswordHash(),
+            entity.getAlias()
         );
     }
     

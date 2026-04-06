@@ -25,5 +25,8 @@ public class UserEntity {
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
+
+    @Column(length = 50)
+    private String alias;
     
 }

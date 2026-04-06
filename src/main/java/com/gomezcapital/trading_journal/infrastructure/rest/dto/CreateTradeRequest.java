@@ -5,7 +5,7 @@ import java.util.UUID;
 
 // Solo se pide lo esencial para abrir un trade
 public record CreateTradeRequest(
-    UUID accountId,
+    UUID portfolioId,
     UUID strategyId,
     UUID playbookId,
     String asset,

@@ -15,22 +15,16 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/analytics")
 @RequiredArgsConstructor
-
 public class AnalyticsController {
 
     private final AnalyticsService analyticsService;
 
-    /**
-     * Endpoint para obtener el resumen del Dashboard.
-     * Método HTTP: GET
-     * URL: http://localhost:8080/api/v1/analytics/account/{accountId}
-     */
+    // <-- Endpoint actualizado a /portfolio/{portfolioId}
+    @GetMapping("/portfolio/{portfolioId}")
+    public ResponseEntity<TradeMetricsResponse> getDashboardMetrics(@PathVariable UUID portfolioId) {
+        log.info("API REST: Solicitando metricas del dashboard para el portafolio: {}", portfolioId);
 
-    @GetMapping("/account/{accountId}")
-    public ResponseEntity<TradeMetricsResponse> getDashboardMetrics(@PathVariable UUID accountId) {
-        log.info("API REST: Solicitando metricas del dashboard para la cuenta: {}", accountId);
-
-        TradeMetrics metrics = analyticsService.calculateAccountMetrics(accountId);
+        TradeMetrics metrics = analyticsService.calculateAccountMetrics(portfolioId);
 
         TradeMetricsResponse response = new TradeMetricsResponse(
             metrics.totalTrades(),

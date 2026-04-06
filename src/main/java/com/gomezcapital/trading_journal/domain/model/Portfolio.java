@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record Account(
+public record Portfolio(
 
     UUID id,
     UUID userId,
@@ -13,7 +13,8 @@ public record Account(
     BigDecimal currentBalance,
     String currency,
     LocalDateTime createdAt
-
 ) {
     
 }
+    
+
