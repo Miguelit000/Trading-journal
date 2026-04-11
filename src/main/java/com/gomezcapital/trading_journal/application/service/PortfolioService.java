@@ -24,12 +24,14 @@ public class PortfolioService {
         return portfolioRepositoryPort.findByUserId(user.id());
     }
 
-    public Portfolio createPortfolio(String userEmail, String name, BigDecimal initialBalance, String currency) {
+    // Actualizamos la firma del método para recibir "targetBalance"
+    public Portfolio createPortfolio(String userEmail, String name, BigDecimal initialBalance, BigDecimal targetBalance, String currency) {
         User user = userRepositoryPort.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
         
+        // Pasamos el targetBalance al constructor
         Portfolio newPortfolio = new Portfolio(
-                null, user.id(), name, initialBalance, initialBalance, currency, LocalDateTime.now()
+                null, user.id(), name, initialBalance, initialBalance, targetBalance, currency, LocalDateTime.now()
         );
         return portfolioRepositoryPort.save(newPortfolio);
     }

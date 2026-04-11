@@ -38,10 +38,10 @@ public class AuthService {
         User newUser = new User(null, request.email(), passwordEncoder.encode(request.password()), aliasTemporal);
         User savedUser = userRepositoryPort.save(newUser);
 
-        // Creamos el primer Portafolio
+        // Creamos el primer Portafolio (Agregamos la meta/target de $20,000 por defecto)
         Portfolio defaultPortfolio = new Portfolio(
             null, savedUser.id(), "Portafolio Principal", 
-            BigDecimal.valueOf(10000.00), BigDecimal.valueOf(10000.00), "USD", LocalDateTime.now()
+            BigDecimal.valueOf(10000.00), BigDecimal.valueOf(10000.00), BigDecimal.valueOf(20000.00), "USD", LocalDateTime.now()
         );
         Portfolio savedPortfolio = portfolioRepositoryPort.save(defaultPortfolio);
 
@@ -60,7 +60,11 @@ public class AuthService {
         UUID portfolioId;
 
         if (portfolios.isEmpty()) {
-            Portfolio newPortfolio = new Portfolio(null, user.id(), "Portafolio Principal", BigDecimal.ZERO, BigDecimal.ZERO, "USD", LocalDateTime.now());
+            // Portafolio vacío si no tiene ninguno (Agregamos la meta/target en ZERO)
+            Portfolio newPortfolio = new Portfolio(
+                null, user.id(), "Portafolio Principal", 
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, "USD", LocalDateTime.now()
+            );
             portfolioId = portfolioRepositoryPort.save(newPortfolio).id();
         } else {
             portfolioId = portfolios.get(0).id();

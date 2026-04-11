@@ -32,6 +32,9 @@ public class PortfolioEntity {
     @Column(name = "current_balance", nullable = false, precision = 18, scale = 2)
     private BigDecimal currentBalance;
 
+    @Column(name = "target_balance", precision = 18, scale = 2)
+    private BigDecimal targetBalance;
+
     @Column(length = 10)
     private String currency;
 

@@ -16,6 +16,7 @@ import org.springframework.core.io.Resource;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -46,6 +47,19 @@ public class TradeController {
         return ResponseEntity.ok(responseList);
     }
 
+    // ==========================================
+    // NUEVO ENDPOINT: CALENDARIO MENSUAL
+    // ==========================================
+    @GetMapping("/portfolio/{portfolioId}/calendar")
+    public ResponseEntity<List<DailySummaryResponse>> getMonthlyCalendar(
+            @PathVariable UUID portfolioId,
+            @RequestParam int year,
+            @RequestParam int month) {
+        
+        List<DailySummaryResponse> calendar = tradeService.getMonthlyCalendar(portfolioId, year, month);
+        return ResponseEntity.ok(calendar);
+    }
+
     @PatchMapping("/{tradeId}/close")
     public ResponseEntity<TradeResponse> closeTrade(@PathVariable UUID tradeId, @RequestBody CloseTradeRequest request) {
         LocalDateTime exitDate = request.exitDate() != null ? request.exitDate() : LocalDateTime.now();
@@ -63,12 +77,27 @@ public class TradeController {
     public ResponseEntity<String> uploadImage(@PathVariable UUID tradeId, @RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) return ResponseEntity.badRequest().body("Archivo vacío.");
         
-        // Guarda en disco
         String fileName = storagePort.uploadTradeImage(tradeId.toString(), file);
-        // Guarda en Base de Datos (Tabla de Galería)
         tradeService.addImageToTrade(tradeId, fileName);
         
         return ResponseEntity.ok("Imagen añadida a la galería exitosamente.");
+    }
+
+    @PostMapping("/editor/image")
+    public ResponseEntity<?> uploadEditorImage(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("success", 0, "message", "Archivo vacío."));
+        }
+        
+        String tempId = "editor_" + UUID.randomUUID().toString().substring(0, 8);
+        String fileName = storagePort.uploadTradeImage(tempId, file);
+        
+        String fileUrl = "http://localhost:8080/api/v1/trades/images/" + fileName; 
+        
+        return ResponseEntity.ok(Map.of(
+            "success", 1,
+            "file", Map.of("url", fileUrl)
+        ));
     }
 
     @GetMapping("/images/{filename:.+}")
@@ -98,12 +127,14 @@ public class TradeController {
         return new ResponseEntity<>(csv.toString().getBytes(), headers, HttpStatus.OK);
     }
 
-    // MAGIA: Une el Trade con su lista de imágenes al enviar los datos a React
     private TradeResponse toResponseDto(Trade trade) {
         List<String> images = tradeService.getTradeImages(trade.id());
         return new TradeResponse(
                 trade.id(), trade.asset(), trade.direction(), trade.status(),
-                trade.entryDate(), trade.entryPrice(), trade.positionSize(), trade.pnlNet(), images
+                trade.entryDate(), trade.entryPrice(), trade.positionSize(), 
+                trade.pnlNet(), 
+                trade.notes(), 
+                images
         );
     }
 }

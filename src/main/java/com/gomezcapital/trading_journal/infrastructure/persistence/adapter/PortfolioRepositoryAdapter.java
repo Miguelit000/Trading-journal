@@ -48,6 +48,7 @@ public class PortfolioRepositoryAdapter implements PortfolioRepositoryPort {
                 .name(portfolio.name())
                 .initialBalance(portfolio.initialBalance())
                 .currentBalance(portfolio.currentBalance())
+                .targetBalance(portfolio.targetBalance()) // <-- NUEVO CAMPO AÑADIDO
                 .currency(portfolio.currency())
                 .createdAt(portfolio.createdAt())
                 .build();
@@ -61,6 +62,7 @@ public class PortfolioRepositoryAdapter implements PortfolioRepositoryPort {
                 entity.getName(),
                 entity.getInitialBalance(),
                 entity.getCurrentBalance(),
+                entity.getTargetBalance(), // <-- NUEVO CAMPO AÑADIDO
                 entity.getCurrency(),
                 entity.getCreatedAt()
         );

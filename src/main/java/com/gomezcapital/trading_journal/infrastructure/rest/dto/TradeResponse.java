@@ -5,9 +5,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-// Solo devolvemos la informacion que necesita en la pantalla
+
 public record TradeResponse( 
-    
     UUID id,
     String asset,
     String direction,
@@ -16,7 +15,7 @@ public record TradeResponse(
     BigDecimal entryPrice,
     BigDecimal positionSize,
     BigDecimal pnlNet,
+    String notes, 
     List<String> images
 ) {
-    
 }

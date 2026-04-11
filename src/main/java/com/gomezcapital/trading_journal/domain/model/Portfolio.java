@@ -11,6 +11,7 @@ public record Portfolio(
     String name,
     BigDecimal initialBalance,
     BigDecimal currentBalance,
+    BigDecimal targetBalance,
     String currency,
     LocalDateTime createdAt
 ) {
