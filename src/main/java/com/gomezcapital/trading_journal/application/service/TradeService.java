@@ -101,45 +101,31 @@ public class TradeService {
         return tradeRepositoryPort.save(updatedTrade);
     }
 
-    // ==========================================
-    // NUEVO: LÓGICA DE CALENDARIO (Agrupación)
-    // ==========================================
     public List<DailySummaryResponse> getMonthlyCalendar(UUID portfolioId, int year, int month) {
         List<Trade> allTrades = tradeRepositoryPort.findByPortfolioId(portfolioId);
 
         return allTrades.stream()
-                // 1. Filtramos solo los trades cerrados que tengan fecha de salida
                 .filter(trade -> "CLOSED".equals(trade.status()) && trade.exitDate() != null)
-                // 2. Filtramos que correspondan al mes y año solicitado
                 .filter(trade -> trade.exitDate().getYear() == year && trade.exitDate().getMonthValue() == month)
-                // 3. Agrupamos por el día exacto (LocalDate)
                 .collect(Collectors.groupingBy(trade -> trade.exitDate().toLocalDate()))
                 .entrySet().stream()
-                // 4. Transformamos cada grupo en nuestro DTO DailySummaryResponse
                 .map(entry -> {
                     LocalDate date = entry.getKey();
                     List<Trade> tradesOfThatDay = entry.getValue();
                     
                     int tradeCount = tradesOfThatDay.size();
-                    
-                    // Sumamos el PnL Neto de todas las operaciones del día
                     BigDecimal netPnl = tradesOfThatDay.stream()
                             .map(trade -> trade.pnlNet() != null ? trade.pnlNet() : BigDecimal.ZERO)
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
                     
-                    // Determinamos si el día fue en verde o en rojo (mayor a 0 es ganancia)
                     boolean isProfitable = netPnl.compareTo(BigDecimal.ZERO) > 0;
 
                     return new DailySummaryResponse(date, tradeCount, netPnl, isProfitable);
                 })
-                // 5. Ordenamos por fecha ascendente para que React lo reciba ordenado
                 .sorted(Comparator.comparing(DailySummaryResponse::date))
                 .toList();
     }
 
-    // ==========================================
-    // LÓGICA DE GALERÍA (4FN)
-    // ==========================================
     public void addImageToTrade(UUID tradeId, String fileName) {
         TradeImage newImage = new TradeImage(null, tradeId, fileName, LocalDateTime.now());
         tradeImageRepositoryPort.save(newImage);
@@ -158,5 +144,101 @@ public class TradeService {
 
     private BigDecimal defaultToZero(BigDecimal value) {
         return value != null ? value : BigDecimal.ZERO;
+    }
+
+    // ==========================================
+    // IMPORTACIÓN DE CSV (SOPORTE EXACTO PARA TU MT5)
+    // ==========================================
+    @Transactional
+    public int importTradesFromCsv(UUID portfolioId, org.springframework.web.multipart.MultipartFile file) {
+        int importedCount = 0;
+        
+        Portfolio portfolio = portfolioRepositoryPort.findById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("El portafolio no existe."));
+        
+        BigDecimal totalPnlImported = BigDecimal.ZERO;
+
+        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(file.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+            String line;
+            boolean isFirstLine = true;
+            
+            while ((line = br.readLine()) != null) {
+                if (isFirstLine || line.trim().isEmpty()) {
+                    isFirstLine = false;
+                    continue;
+                }
+
+                // El "-1" asegura que mantenga las comas finales vacías en el arreglo
+                String[] columns = line.replace("\"", "").split(",", -1);
+                
+                if (columns.length < 14) continue; 
+
+                try {
+                    String type = columns[3].trim().toLowerCase(); 
+                    if (!type.equals("buy") && !type.equals("sell")) continue;
+                    
+                    String direction = type.equals("buy") ? "LONG" : "SHORT";
+                    BigDecimal positionSize = parseBigDecimalOrZero(columns[4]);
+                    String asset = columns[6].trim().toUpperCase();
+                    BigDecimal entryPrice = parseBigDecimalOrZero(columns[7]);
+                    BigDecimal exitPrice = parseBigDecimalOrZero(columns[8]);
+                    
+                    BigDecimal stopLoss = parsePriceOrNull(columns[9]);
+                    BigDecimal takeProfit = parsePriceOrNull(columns[10]);
+                    
+                    BigDecimal commission = parseBigDecimalOrZero(columns[11]);
+                    BigDecimal swap = parseBigDecimalOrZero(columns[12]);
+                    BigDecimal profit = parseBigDecimalOrZero(columns[13]);
+                    
+                    BigDecimal pnlNet = profit.add(swap).add(commission);
+                    
+                    // Tu MT5 exporta fechas en formato ISO directo (ej. 2026-04-10T14:11:47)
+                    LocalDateTime entryDate = LocalDateTime.parse(columns[1].trim());
+                    LocalDateTime exitDate = LocalDateTime.parse(columns[2].trim());
+
+                    Trade newTrade = new Trade(
+                            null, portfolioId, null, null, asset, direction, "CLOSED",
+                            entryDate, exitDate, entryPrice, exitPrice, positionSize,
+                            takeProfit, stopLoss, null, null, null, null,
+                            commission, swap, profit, pnlNet, "Importado desde MT5"
+                    );
+
+                    tradeRepositoryPort.save(newTrade);
+                    totalPnlImported = totalPnlImported.add(pnlNet);
+                    importedCount++;
+
+                } catch (Exception e) {
+                    log.error("Error parseando línea CSV: {}", line, e);
+                }
+            }
+
+            if (importedCount > 0) {
+                Portfolio updatedPortfolio = new Portfolio(
+                        portfolio.id(), portfolio.userId(), portfolio.name(),
+                        portfolio.initialBalance(), portfolio.currentBalance().add(totalPnlImported), 
+                        portfolio.targetBalance(), portfolio.currency(), portfolio.createdAt()
+                );
+                portfolioRepositoryPort.save(updatedPortfolio);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al leer el archivo CSV: " + e.getMessage());
+        }
+
+        return importedCount;
+    }
+
+    // --- MÉTODOS DE SEGURIDAD PARA TEXTO VACÍO ---
+    private BigDecimal parseBigDecimalOrZero(String val) {
+        if (val == null || val.trim().isEmpty()) return BigDecimal.ZERO;
+        try { return new BigDecimal(val.trim()); } catch (Exception e) { return BigDecimal.ZERO; }
+    }
+
+    private BigDecimal parsePriceOrNull(String val) {
+        if (val == null || val.trim().isEmpty()) return null;
+        try { 
+            BigDecimal bd = new BigDecimal(val.trim());
+            return bd.compareTo(BigDecimal.ZERO) == 0 ? null : bd;
+        } catch (Exception e) { return null; }
     }
 }

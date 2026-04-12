@@ -84,7 +84,8 @@ public class TradeController {
     }
 
     @PostMapping("/editor/image")
-    public ResponseEntity<?> uploadEditorImage(@RequestParam("file") MultipartFile file) {
+    // <-- CORRECCIÓN: Volvemos a poner "file" para que coincida exactamente con React
+    public ResponseEntity<?> uploadEditorImage(@RequestParam("file") MultipartFile file) { 
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("success", 0, "message", "Archivo vacío."));
         }
@@ -125,6 +126,30 @@ public class TradeController {
         headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=historial_operaciones.csv");
         headers.set(HttpHeaders.CONTENT_TYPE, "text/csv");
         return new ResponseEntity<>(csv.toString().getBytes(), headers, HttpStatus.OK);
+    }
+
+    @PostMapping("/portfolio/{portfolioId}/import/csv")
+    public ResponseEntity<Map<String, Object>> importTradesFromCsv(
+            @PathVariable UUID portfolioId,
+            @RequestParam("file") MultipartFile file) {
+        
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El archivo está vacío."));
+        }
+
+        try {
+            int importedCount = tradeService.importTradesFromCsv(portfolioId, file);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Se importaron " + importedCount + " operaciones exitosamente.",
+                "importedCount", importedCount
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+        }
     }
 
     private TradeResponse toResponseDto(Trade trade) {
