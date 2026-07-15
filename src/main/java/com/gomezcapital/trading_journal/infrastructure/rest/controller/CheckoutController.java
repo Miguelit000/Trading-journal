@@ -1,6 +1,6 @@
 package com.gomezcapital.trading_journal.infrastructure.rest.controller;
 
-import com.gomezcapital.trading_journal.application.service.StripeService;
+import com.gomezcapital.trading_journal.application.service.LemonSqueezyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +17,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CheckoutController {
 
-    private final StripeService stripeService;
+    private final LemonSqueezyService lemonSqueezyService;
 
     @PostMapping("/create-session")
     public ResponseEntity<Map<String, String>> createCheckoutSession() {
         try {
+            // Obtenemos de forma segura el email del usuario autenticado por JWT
             String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-            String sessionUrl = stripeService.createCheckoutSession(userEmail);
+            String sessionUrl = lemonSqueezyService.createCheckoutUrl(userEmail);
             
             Map<String, String> response = new HashMap<>();
             response.put("url", sessionUrl);
@@ -31,19 +32,16 @@ public class CheckoutController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Error al crear sesión: " + e.getMessage());
+            errorResponse.put("error", "Error al crear sesión de pago: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
-    // <-- NUESTRO NUEVO ENDPOINT DEL PORTAL -->
     @PostMapping("/portal")
     public ResponseEntity<Map<String, String>> createPortalSession() {
         try {
-            // Obtenemos el email del usuario que tiene la sesión iniciada
             String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-            
-            String portalUrl = stripeService.createCustomerPortalSession(userEmail);
+            String portalUrl = lemonSqueezyService.getCustomerPortalUrl(userEmail);
             
             Map<String, String> response = new HashMap<>();
             response.put("url", portalUrl);
@@ -51,7 +49,7 @@ public class CheckoutController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Error al abrir el portal: " + e.getMessage());
+            errorResponse.put("error", "Error al abrir el portal de cliente: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }

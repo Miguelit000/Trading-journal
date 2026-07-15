@@ -1,7 +1,7 @@
 package com.gomezcapital.trading_journal.infrastructure.rest.controller;
 
 import com.gomezcapital.trading_journal.application.service.TradeService;
-import com.gomezcapital.trading_journal.application.service.PortfolioService; // <-- NUEVO IMPORT
+import com.gomezcapital.trading_journal.application.service.PortfolioService;
 import com.gomezcapital.trading_journal.domain.model.Trade;
 import com.gomezcapital.trading_journal.infrastructure.rest.dto.*;
 import com.gomezcapital.trading_journal.domain.ports.StoragePort;
@@ -11,10 +11,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication; // <-- NUEVO IMPORT
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.core.io.Resource;
+import com.gomezcapital.trading_journal.domain.model.User;
+import com.gomezcapital.trading_journal.domain.ports.UserRepositoryPort;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,11 +31,11 @@ public class TradeController {
 
     private final TradeService tradeService;
     private final StoragePort storagePort;
-    private final PortfolioService portfolioService; // <-- INYECTAMOS EL ESCUDO
+    private final PortfolioService portfolioService; 
+    private final UserRepositoryPort userRepositoryPort; // <-- Corregido: se eliminó la barra diagonal
 
     @PostMapping
     public ResponseEntity<TradeResponse> createTrade(@RequestBody CreateTradeRequest request, Authentication authentication) {
-        // <-- ESCUDO ACTIVADO -->
         portfolioService.validatePortfolioOwnership(request.portfolioId(), authentication.getName());
         
         Trade tradeToCreate = new Trade(
@@ -48,7 +50,6 @@ public class TradeController {
 
     @GetMapping("/portfolio/{portfolioId}")
     public ResponseEntity<List<TradeResponse>> getTradesByPortfolio(@PathVariable UUID portfolioId, Authentication authentication) {
-        // <-- ESCUDO ACTIVADO -->
         portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
         
         List<TradeResponse> responseList = tradeService.getTradesByPortfolioId(portfolioId)
@@ -56,9 +57,6 @@ public class TradeController {
         return ResponseEntity.ok(responseList);
     }
 
-    // ==========================================
-    // ENDPOINT: CALENDARIO MENSUAL
-    // ==========================================
     @GetMapping("/portfolio/{portfolioId}/calendar")
     public ResponseEntity<List<DailySummaryResponse>> getMonthlyCalendar(
             @PathVariable UUID portfolioId,
@@ -66,7 +64,6 @@ public class TradeController {
             @RequestParam int month,
             Authentication authentication) {
         
-        // <-- ESCUDO ACTIVADO -->
         portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
         
         List<DailySummaryResponse> calendar = tradeService.getMonthlyCalendar(portfolioId, year, month);
@@ -125,7 +122,6 @@ public class TradeController {
 
     @GetMapping("/portfolio/{portfolioId}/export/csv")
     public ResponseEntity<byte[]> exportTradesToCsv(@PathVariable UUID portfolioId, Authentication authentication) {
-        // <-- ESCUDO ACTIVADO -->
         portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
         
         List<Trade> trades = tradeService.getTradesByPortfolioId(portfolioId);
@@ -149,8 +145,15 @@ public class TradeController {
             @RequestParam("file") MultipartFile file,
             Authentication authentication) {
         
-        // <-- ESCUDO ACTIVADO -->
         portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
+        
+        User user = userRepositoryPort.findByEmail(authentication.getName()).orElseThrow();
+        if (!"ROLE_PRO".equals(user.role())) {
+             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                 "success", false,
+                 "error", "La importación automática desde MT5 es una función exclusiva del plan PRO."
+             ));
+        }
         
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "El archivo está vacío."));

@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.gomezcapital.trading_journal.domain.ports.UserRepositoryPort;
+import com.gomezcapital.trading_journal.domain.model.User;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -29,9 +31,25 @@ public class TradeService {
     private final TradeRepositoryPort tradeRepositoryPort;
     private final TradeImageRepositoryPort tradeImageRepositoryPort;
     private final PortfolioRepositoryPort portfolioRepositoryPort;
+    private final UserRepositoryPort userRepositoryPort;
 
     public Trade logNewTrade(Trade trade) {
         validateNewTrade(trade);
+        
+        // <-- VALIDACIÓN DE LÍMITE DE TRADES PARA CUENTAS FREE -->
+        Portfolio portfolio = portfolioRepositoryPort.findById(trade.portfolioId())
+                .orElseThrow(() -> new IllegalArgumentException("El portfolio asociado no existe."));
+        User user = userRepositoryPort.findById(portfolio.userId())
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
+
+        if ("ROLE_FREE".equals(user.role())) {
+            int currentTrades = tradeRepositoryPort.findByPortfolioId(portfolio.id()).size();
+            if (currentTrades >= 50) {
+                throw new IllegalStateException("Límite de 50 operaciones alcanzado. ¡Mejora a PRO para operar sin límites!");
+            }
+        }
+        // <-- FIN DE LA VALIDACIÓN -->
+
         Trade tradeToSave = new Trade(
                 trade.id(), trade.portfolioId(), trade.strategyId(), trade.playbookId(),
                 trade.asset(), trade.direction(), "OPEN",

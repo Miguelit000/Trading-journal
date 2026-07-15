@@ -1,0 +1,4066 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.mvn/
+  wrapper/
+    maven-wrapper.properties
+src/
+  main/
+    java/
+      com/
+        gomezcapital/
+          trading_journal/
+            application/
+              service/
+                AnalyticsService.java
+                AuthService.java
+                PortfolioService.java
+                StrategyService.java
+                StripeService.java
+                TradeService.java
+            domain/
+              model/
+                Portfolio.java
+                Strategy.java
+                Trade.java
+                TradeImage.java
+                TradeMetrics.java
+                User.java
+              ports/
+                PortfolioRepositoryPort.java
+                StoragePort.java
+                StrategyRepositoryPort.java
+                TradeImageRepositoryPort.java
+                TradeRepositoryPort.java
+                UserRepositoryPort.java
+            infrastructure/
+              config/
+                CorsConfig.java
+                SwaggerConfig.java
+              persistence/
+                adapter/
+                  PortfolioRepositoryAdapter.java
+                  StrategyRepositoryAdapter.java
+                  TradeImageRepositoryAdapter.java
+                  TradeRepositoryAdapter.java
+                  UserRepositoryAdapter.java
+                entity/
+                  PortfolioEntity.java
+                  StrategyEntity.java
+                  TradeEntity.java
+                  TradeImageEntity.java
+                  UserEntity.java
+                repository/
+                  JpaUserRepository.java
+                  PortfolioJpaRepository.java
+                  StrategyJpaRepository.java
+                  TradeImageJpaRepository.java
+                  TradeJpaRepository.java
+              rest/
+                controller/
+                  AnalyticsController.java
+                  AuthController.java
+                  CheckoutController.java
+                  PortfolioController.java
+                  StrategyController.java
+                  StripeWebhookController.java
+                  TradeController.java
+                  UserController.java
+                dto/
+                  AdvancedAnalyticsResponse.java
+                  AuthenticationResponse.java
+                  CloseTradeRequest.java
+                  CreatePortfolioRequest.java
+                  CreateStrategyRequest.java
+                  CreateTradeRequest.java
+                  DailySummaryResponse.java
+                  ErrorResponse.java
+                  GoogleLoginRequest.java
+                  LoginRequest.java
+                  RegisterRequest.java
+                  StrategyResponse.java
+                  TradeMetricsResponse.java
+                  TradeResponse.java
+                  UpdatePortfolioBalancesRequest.java
+                  UpdateTargetRequest.java
+                  UpdateTradeRequest.java
+                exception/
+                  GlobalExceptionHandler.java
+              security/
+                JwtAuthenticationFilter.java
+                JwtService.java
+                SecurityConfig.java
+              storage/
+                LocalFileStorageAdapter.java
+            TradingJournalApplication.java
+    resources/
+      application.properties
+  test/
+    java/
+      com/
+        gomezcapital/
+          trading_journal/
+            TradingJournalApplicationTests.java
+uploads/
+  trades/
+    0d18db0a-f7a5-43ef-bace-bd1d656b9d6a_2e47fbc6.png
+    1c864fba-0aa2-43e9-ad3d-26f4e0ad74bb_726e0aec.png
+    79cdd5e7-cc71-45a2-859d-bb6dc2dd46fe_4c71effb.png
+    79cdd5e7-cc71-45a2-859d-bb6dc2dd46fe_6a1de4e0.png
+    9f54c487-ab69-4f18-8b01-51a2cbee29aa_891b6299.png
+    a78d0648-6cd7-4beb-9517-9cdaa564e396_875207cb.png
+    e27f8054-71ec-49e6-a3c6-fa712e925173_2d363139.png
+    editor_096ba30e_643ad3bf.png
+    editor_5cbc4f39_2fdedc31.png
+.gitattributes
+.gitignore
+Dockerfile
+mvnw
+mvnw.cmd
+pom.xml
+prueba.png
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".mvn/wrapper/maven-wrapper.properties">
+wrapperVersion=3.3.4
+distributionType=only-script
+distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.12/apache-maven-3.9.12-bin.zip
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/application/service/AnalyticsService.java">
+package com.gomezcapital.trading_journal.application.service;
+
+import com.gomezcapital.trading_journal.domain.model.Portfolio;
+import com.gomezcapital.trading_journal.domain.model.Trade;
+import com.gomezcapital.trading_journal.domain.ports.PortfolioRepositoryPort;
+import com.gomezcapital.trading_journal.domain.ports.TradeRepositoryPort;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.AdvancedAnalyticsResponse;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.DailySummaryResponse;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.TradeMetricsResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class AnalyticsService {
+
+    private final TradeRepositoryPort tradeRepositoryPort;
+    private final PortfolioRepositoryPort portfolioRepositoryPort;
+
+    // =========================================================
+    // MÉTODO ORIGINAL RESTAURADO (Para el Dashboard)
+    // =========================================================
+    public TradeMetricsResponse calculateMetrics(UUID portfolioId) {
+        List<Trade> closedTrades = tradeRepositoryPort.findByPortfolioId(portfolioId).stream()
+                .filter(t -> "CLOSED".equals(t.status()))
+                .toList();
+
+        if (closedTrades.isEmpty()) {
+            return new TradeMetricsResponse(0, 0, 0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+
+        int totalTrades = closedTrades.size();
+        List<Trade> wins = closedTrades.stream().filter(t -> t.pnlNet() != null && t.pnlNet().compareTo(BigDecimal.ZERO) > 0).toList();
+        List<Trade> losses = closedTrades.stream().filter(t -> t.pnlNet() != null && t.pnlNet().compareTo(BigDecimal.ZERO) < 0).toList();
+
+        BigDecimal winRate = BigDecimal.valueOf(wins.size())
+                .divide(BigDecimal.valueOf(totalTrades), 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
+
+        BigDecimal grossProfit = wins.stream().map(Trade::pnlNet).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal grossLoss = losses.stream().map(Trade::pnlNet).reduce(BigDecimal.ZERO, BigDecimal::add).abs();
+
+        BigDecimal profitFactor = grossLoss.compareTo(BigDecimal.ZERO) == 0 ? grossProfit : grossProfit.divide(grossLoss, 2, RoundingMode.HALF_UP);
+        BigDecimal totalPnl = grossProfit.subtract(grossLoss);
+
+        return new TradeMetricsResponse(totalTrades, wins.size(), losses.size(), winRate, profitFactor, totalPnl);
+    }
+
+    // =========================================================
+    // MÉTODO NUEVO (Para la Pestaña de Estadísticas Avanzadas)
+    // =========================================================
+    public AdvancedAnalyticsResponse calculateAdvancedAnalytics(UUID portfolioId) {
+        Portfolio portfolio = portfolioRepositoryPort.findById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("Portafolio no encontrado"));
+
+        List<Trade> allTrades = tradeRepositoryPort.findByPortfolioId(portfolioId);
+        
+        List<Trade> closedTrades = allTrades.stream()
+                .filter(t -> "CLOSED".equals(t.status()) && t.exitDate() != null)
+                .sorted(Comparator.comparing(Trade::exitDate))
+                .toList();
+
+        if (closedTrades.isEmpty()) {
+            return emptyResponse();
+        }
+
+        int totalTrades = closedTrades.size();
+        List<Trade> wins = closedTrades.stream().filter(t -> t.pnlNet() != null && t.pnlNet().compareTo(BigDecimal.ZERO) > 0).toList();
+        List<Trade> losses = closedTrades.stream().filter(t -> t.pnlNet() != null && t.pnlNet().compareTo(BigDecimal.ZERO) < 0).toList();
+
+        BigDecimal winRate = BigDecimal.valueOf(wins.size())
+                .divide(BigDecimal.valueOf(totalTrades), 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
+
+        BigDecimal grossProfit = wins.stream().map(Trade::pnlNet).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal grossLoss = losses.stream().map(Trade::pnlNet).reduce(BigDecimal.ZERO, BigDecimal::add).abs();
+
+        BigDecimal profitFactor = grossLoss.compareTo(BigDecimal.ZERO) == 0 ? grossProfit : grossProfit.divide(grossLoss, 2, RoundingMode.HALF_UP);
+
+        BigDecimal netPnl = grossProfit.subtract(grossLoss);
+        BigDecimal expectancyUsd = netPnl.divide(BigDecimal.valueOf(totalTrades), 2, RoundingMode.HALF_UP);
+
+        BigDecimal avgWin = wins.isEmpty() ? BigDecimal.ZERO : grossProfit.divide(BigDecimal.valueOf(wins.size()), 2, RoundingMode.HALF_UP);
+        BigDecimal avgLoss = losses.isEmpty() ? BigDecimal.ZERO : grossLoss.divide(BigDecimal.valueOf(losses.size()), 2, RoundingMode.HALF_UP);
+        BigDecimal averageRewardToRiskUsd = avgLoss.compareTo(BigDecimal.ZERO) == 0 ? avgWin : avgWin.divide(avgLoss, 2, RoundingMode.HALF_UP);
+
+        BigDecimal totalR = closedTrades.stream()
+                .map(t -> t.actualRr() != null ? t.actualRr() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal expectancyR = totalR.divide(BigDecimal.valueOf(totalTrades), 2, RoundingMode.HALF_UP);
+        
+        BigDecimal peak = portfolio.initialBalance() != null ? portfolio.initialBalance() : BigDecimal.ZERO;
+        BigDecimal currentBalance = peak;
+        BigDecimal maxDrawdownUsd = BigDecimal.ZERO;
+        BigDecimal maxDrawdownPct = BigDecimal.ZERO;
+        BigDecimal totalDrawdownUsd = BigDecimal.ZERO;
+        int drawdownDays = 0;
+
+        int currentWinStreak = 0, maxWinStreak = 0;
+        int currentLossStreak = 0, maxLossStreak = 0;
+
+        long totalDurationSeconds = 0;
+        BigDecimal totalMae = BigDecimal.ZERO;
+        BigDecimal totalMfe = BigDecimal.ZERO;
+        int maeCount = 0, mfeCount = 0;
+
+        for (Trade t : closedTrades) {
+            BigDecimal pnl = t.pnlNet() != null ? t.pnlNet() : BigDecimal.ZERO;
+            
+            if (pnl.compareTo(BigDecimal.ZERO) > 0) {
+                currentWinStreak++; maxWinStreak = Math.max(maxWinStreak, currentWinStreak); currentLossStreak = 0;
+            } else if (pnl.compareTo(BigDecimal.ZERO) < 0) {
+                currentLossStreak++; maxLossStreak = Math.max(maxLossStreak, currentLossStreak); currentWinStreak = 0;
+            } else {
+                currentWinStreak = 0; currentLossStreak = 0;
+            }
+
+            currentBalance = currentBalance.add(pnl);
+            if (currentBalance.compareTo(peak) > 0) {
+                peak = currentBalance;
+            } else {
+                BigDecimal ddUsd = peak.subtract(currentBalance);
+                BigDecimal ddPct = peak.compareTo(BigDecimal.ZERO) > 0 ? ddUsd.divide(peak, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)) : BigDecimal.ZERO;
+                
+                if (ddUsd.compareTo(maxDrawdownUsd) > 0) maxDrawdownUsd = ddUsd;
+                if (ddPct.compareTo(maxDrawdownPct) > 0) maxDrawdownPct = ddPct;
+                totalDrawdownUsd = totalDrawdownUsd.add(ddUsd);
+                drawdownDays++;
+            }
+
+            if (t.entryDate() != null && t.exitDate() != null) {
+                totalDurationSeconds += Duration.between(t.entryDate(), t.exitDate()).getSeconds();
+            }
+
+            // Excursiones (Calculamos la distancia absoluta entre la Entrada y el Pico)
+            if (t.maePrice() != null && t.entryPrice() != null) { 
+                totalMae = totalMae.add(t.entryPrice().subtract(t.maePrice()).abs()); 
+                maeCount++; 
+            }
+            if (t.mfePrice() != null && t.entryPrice() != null) { 
+                totalMfe = totalMfe.add(t.entryPrice().subtract(t.mfePrice()).abs()); 
+                mfeCount++; 
+            }
+        }
+
+        BigDecimal avgDrawdownUsd = drawdownDays == 0 ? BigDecimal.ZERO : totalDrawdownUsd.divide(BigDecimal.valueOf(drawdownDays), 2, RoundingMode.HALF_UP);
+        BigDecimal avgHoldingHours = BigDecimal.valueOf(totalDurationSeconds).divide(BigDecimal.valueOf(3600 * totalTrades), 2, RoundingMode.HALF_UP);
+        BigDecimal avgMae = maeCount == 0 ? BigDecimal.ZERO : totalMae.divide(BigDecimal.valueOf(maeCount), 2, RoundingMode.HALF_UP);
+        BigDecimal avgMfe = mfeCount == 0 ? BigDecimal.ZERO : totalMfe.divide(BigDecimal.valueOf(mfeCount), 2, RoundingMode.HALF_UP);
+
+        double mean = expectancyUsd.doubleValue();
+        double sumSq = 0;
+        for (Trade t : closedTrades) {
+            double diff = (t.pnlNet() != null ? t.pnlNet().doubleValue() : 0) - mean;
+            sumSq += diff * diff;
+        }
+        double stdDev = Math.sqrt(sumSq / totalTrades);
+        double sqnValue = stdDev == 0 ? 0 : (mean / stdDev) * Math.sqrt(totalTrades);
+        BigDecimal sqn = BigDecimal.valueOf(sqnValue).setScale(2, RoundingMode.HALF_UP);
+
+        List<DailySummaryResponse> heatmap = closedTrades.stream()
+            .collect(Collectors.groupingBy(t -> t.exitDate().toLocalDate()))
+            .entrySet().stream()
+            .map(entry -> {
+                LocalDate date = entry.getKey();
+                List<Trade> tradesOfThatDay = entry.getValue();
+                BigDecimal dayPnl = tradesOfThatDay.stream()
+                        .map(t -> t.pnlNet() != null ? t.pnlNet() : BigDecimal.ZERO)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                return new DailySummaryResponse(date, tradesOfThatDay.size(), dayPnl, dayPnl.compareTo(BigDecimal.ZERO) > 0);
+            })
+            .sorted(Comparator.comparing(DailySummaryResponse::date))
+            .toList();
+
+        return new AdvancedAnalyticsResponse(
+                totalTrades, winRate, profitFactor,
+                expectancyUsd, expectancyR, averageRewardToRiskUsd, BigDecimal.ZERO, 
+                maxDrawdownUsd, maxDrawdownPct, avgDrawdownUsd, 0, 
+                maxWinStreak, maxLossStreak, avgHoldingHours, sqn,
+                avgMae, avgMfe, heatmap
+        );
+    }
+
+    private AdvancedAnalyticsResponse emptyResponse() {
+        return new AdvancedAnalyticsResponse(
+                0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, 0, 0, 0, BigDecimal.ZERO, BigDecimal.ZERO,
+                BigDecimal.ZERO, BigDecimal.ZERO, new ArrayList<>()
+        );
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/application/service/AuthService.java">
+package com.gomezcapital.trading_journal.application.service;
+
+import com.gomezcapital.trading_journal.domain.model.User;
+import com.gomezcapital.trading_journal.domain.ports.UserRepositoryPort;
+import com.gomezcapital.trading_journal.domain.ports.PortfolioRepositoryPort;
+import com.gomezcapital.trading_journal.domain.model.Portfolio;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.AuthenticationResponse;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.LoginRequest;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.RegisterRequest;
+import com.gomezcapital.trading_journal.infrastructure.security.JwtService;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.UUID;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepositoryPort userRepositoryPort;
+    private final PortfolioRepositoryPort portfolioRepositoryPort;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+
+    @Value("${google.client.id}")
+    private String googleClientId;
+
+    public AuthenticationResponse register(RegisterRequest request) {
+        if (userRepositoryPort.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("El email ya está registrado.");
+        }
+
+        String aliasTemporal = request.email().split("@")[0];
+
+        // <-- AÑADIMOS "ROLE_FREE" -->
+        User newUser = new User(null, request.email(), passwordEncoder.encode(request.password()), aliasTemporal, "ROLE_FREE");
+        User savedUser = userRepositoryPort.save(newUser);
+
+        Portfolio defaultPortfolio = new Portfolio(
+            null, savedUser.id(), "Portafolio Principal", 
+            BigDecimal.valueOf(10000.00), BigDecimal.valueOf(10000.00), BigDecimal.valueOf(20000.00), "USD", LocalDateTime.now()
+        );
+        Portfolio savedPortfolio = portfolioRepositoryPort.save(defaultPortfolio);
+
+        return new AuthenticationResponse(jwtService.generateToken(savedUser.email()), savedPortfolio.id());
+    }
+
+    public AuthenticationResponse login(LoginRequest request) {
+        User user = userRepositoryPort.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("Credenciales incorrectas."));
+
+        if (!passwordEncoder.matches(request.password(), user.passwordHash())) {
+            throw new IllegalArgumentException("Credenciales incorrectas.");
+        }
+
+        var portfolios = portfolioRepositoryPort.findByUserId(user.id());
+        UUID portfolioId;
+
+        if (portfolios.isEmpty()) {
+            Portfolio newPortfolio = new Portfolio(
+                null, user.id(), "Portafolio Principal", 
+                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, "USD", LocalDateTime.now()
+            );
+            portfolioId = portfolioRepositoryPort.save(newPortfolio).id();
+        } else {
+            portfolioId = portfolios.get(0).id();
+        }
+
+        return new AuthenticationResponse(jwtService.generateToken(user.email()), portfolioId);
+    }
+
+    public AuthenticationResponse authenticateWithGoogle(String idTokenString) {
+        try {
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                    .setAudience(Collections.singletonList(googleClientId))
+                    .build();
+
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            
+            if (idToken != null) {
+                GoogleIdToken.Payload payload = idToken.getPayload();
+                String email = payload.getEmail(); 
+
+                Optional<User> userOptional = userRepositoryPort.findByEmail(email);
+                User user;
+                UUID portfolioId;
+                
+                if (userOptional.isPresent()) {
+                    user = userOptional.get();
+                    var portfolios = portfolioRepositoryPort.findByUserId(user.id());
+                    if (portfolios.isEmpty()) {
+                        Portfolio newPortfolio = new Portfolio(
+                            null, user.id(), "Portafolio Principal", 
+                            BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, "USD", LocalDateTime.now()
+                        );
+                        portfolioId = portfolioRepositoryPort.save(newPortfolio).id();
+                    } else {
+                        portfolioId = portfolios.get(0).id();
+                    }
+                } else {
+                    String aliasTemporal = email.split("@")[0];
+                    // <-- AÑADIMOS "ROLE_FREE" -->
+                    user = new User(
+                            null, 
+                            email, 
+                            passwordEncoder.encode(UUID.randomUUID().toString()), 
+                            aliasTemporal,
+                            "ROLE_FREE" 
+                    );
+                    user = userRepositoryPort.save(user);
+
+                    Portfolio defaultPortfolio = new Portfolio(
+                        null, user.id(), "Portafolio Principal", 
+                        BigDecimal.valueOf(10000.00), BigDecimal.valueOf(10000.00), BigDecimal.valueOf(20000.00), "USD", LocalDateTime.now()
+                    );
+                    portfolioId = portfolioRepositoryPort.save(defaultPortfolio).id();
+                }
+
+                String jwtToken = jwtService.generateToken(user.email());
+                return new AuthenticationResponse(jwtToken, portfolioId);
+            } else {
+                throw new IllegalArgumentException("El token de Google es inválido o ha caducado.");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error verificando token de Google: " + e.getMessage());
+        }
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/application/service/PortfolioService.java">
+package com.gomezcapital.trading_journal.application.service;
+
+import com.gomezcapital.trading_journal.domain.model.Portfolio;
+import com.gomezcapital.trading_journal.domain.model.User;
+import com.gomezcapital.trading_journal.domain.ports.PortfolioRepositoryPort;
+import com.gomezcapital.trading_journal.domain.ports.UserRepositoryPort;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class PortfolioService {
+
+    private final PortfolioRepositoryPort portfolioRepositoryPort;
+    private final UserRepositoryPort userRepositoryPort;
+
+    // <-- NUEVA FUNCIÓN DE SEGURIDAD (MULTITENANT) -->
+    public void validatePortfolioOwnership(UUID portfolioId, String userEmail) {
+        User user = userRepositoryPort.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
+        
+        Portfolio portfolio = portfolioRepositoryPort.findById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("Portafolio no encontrado."));
+
+        if (!portfolio.userId().equals(user.id())) {
+            throw new SecurityException("Acceso denegado: Este portafolio no te pertenece.");
+        }
+    }
+
+    public List<Portfolio> getUserPortfolios(String userEmail) {
+        User user = userRepositoryPort.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
+        return portfolioRepositoryPort.findByUserId(user.id());
+    }
+
+    public Portfolio createPortfolio(String userEmail, String name, BigDecimal initialBalance, BigDecimal targetBalance, String currency) {
+        User user = userRepositoryPort.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado."));
+
+        // <-- RESTRICCIÓN SAAS: Límite para cuentas gratuitas -->
+        if ("ROLE_FREE".equals(user.role())) {
+            List<Portfolio> currentPortfolios = portfolioRepositoryPort.findByUserId(user.id());
+            if (currentPortfolios.size() >= 1) {
+                throw new IllegalStateException("Límite alcanzado: Las cuentas gratuitas solo pueden tener 1 portafolio. ¡Mejora a PRO!");
+            }
+        }
+
+        Portfolio portfolio = new Portfolio(
+                null,
+                user.id(),
+                name,
+                initialBalance,
+                initialBalance,
+                targetBalance,
+                currency,
+                LocalDateTime.now()
+        );
+        return portfolioRepositoryPort.save(portfolio);
+    }
+
+    public Portfolio updateTargetBalance(UUID portfolioId, BigDecimal newTargetBalance, String userEmail) {
+        validatePortfolioOwnership(portfolioId, userEmail); // Blindaje
+
+        Portfolio portfolio = portfolioRepositoryPort.findById(portfolioId).get();
+        Portfolio updatedPortfolio = new Portfolio(
+                portfolio.id(), portfolio.userId(), portfolio.name(),
+                portfolio.initialBalance(), portfolio.currentBalance(), 
+                newTargetBalance, portfolio.currency(), portfolio.createdAt()
+        );
+        return portfolioRepositoryPort.save(updatedPortfolio);
+    }
+
+    public Portfolio updateBalances(UUID portfolioId, BigDecimal newInitialBalance, BigDecimal newCurrentBalance, BigDecimal newTargetBalance, String userEmail) {
+        validatePortfolioOwnership(portfolioId, userEmail); // Blindaje
+
+        Portfolio portfolio = portfolioRepositoryPort.findById(portfolioId).get();
+        Portfolio updatedPortfolio = new Portfolio(
+                portfolio.id(), portfolio.userId(), portfolio.name(),
+                newInitialBalance, newCurrentBalance, newTargetBalance, 
+                portfolio.currency(), portfolio.createdAt()
+        );
+        return portfolioRepositoryPort.save(updatedPortfolio);
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/application/service/StrategyService.java">
+package com.gomezcapital.trading_journal.application.service;
+
+import com.gomezcapital.trading_journal.domain.model.Strategy;
+import com.gomezcapital.trading_journal.domain.ports.StrategyRepositoryPort;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.CreateStrategyRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class StrategyService {
+
+    private final StrategyRepositoryPort strategyRepositoryPort;
+
+    public Strategy creatStrategy(CreateStrategyRequest request) {
+        log.info("Creando nueva estrategia: {}", request.name());
+        Strategy newStrategy = new Strategy(
+            null, request.portfolioId(), request.name(), request.description(), request.rules()
+        );
+        return strategyRepositoryPort.save(newStrategy);
+    }
+
+    // <-- AQUÍ ESTABA EL ERROR: El método ya tiene el nombre correcto
+    public List<Strategy> getStrategiesByPortfolioId(UUID portfolioId) {
+        return strategyRepositoryPort.findByPortfolioId(portfolioId);
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/application/service/StripeService.java">
+package com.gomezcapital.trading_journal.application.service;
+
+import com.gomezcapital.trading_journal.domain.model.User;
+import com.gomezcapital.trading_journal.domain.ports.UserRepositoryPort;
+import com.stripe.Stripe;
+import com.stripe.model.checkout.Session;
+import com.stripe.param.checkout.SessionCreateParams;
+import com.stripe.model.CustomerSearchResult;
+import com.stripe.param.CustomerSearchParams;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+// ¡ELIMINAMOS LOS IMPORTS DUPLICADOS DEL PORTAL PARA EVITAR CHOQUES!
+
+@Service
+@RequiredArgsConstructor
+public class StripeService {
+
+    private final UserRepositoryPort userRepositoryPort;
+
+    @Value("${stripe.api.key}")
+    private String stripeApiKey;
+
+    @Value("${stripe.price.pro.id}")
+    private String proPriceId;
+
+    @Value("${stripe.success.url}")
+    private String successUrl;
+
+    @Value("${stripe.cancel.url}")
+    private String cancelUrl;
+
+    // Esto inicializa la llave de Stripe apenas arranca Spring Boot
+    @PostConstruct
+    public void init() {
+        Stripe.apiKey = stripeApiKey;
+    }
+
+    public String createCheckoutSession(String userEmail) {
+        User user = userRepositoryPort.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        try {
+            // Construimos la pasarela de pago para la suscripción
+            SessionCreateParams params = SessionCreateParams.builder()
+                    .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+                    .setCustomerEmail(user.email()) 
+                    .setSuccessUrl(successUrl)
+                    .setCancelUrl(cancelUrl)
+                    .addLineItem(
+                            SessionCreateParams.LineItem.builder()
+                                    .setPrice(proPriceId)
+                                    .setQuantity(1L)
+                                    .build()
+                    )
+                    // Metadatos para la Sesión
+                    .putMetadata("userId", user.id().toString()) 
+                    // Metadatos para la Suscripción
+                    .setSubscriptionData(
+                        SessionCreateParams.SubscriptionData.builder()
+                            .putMetadata("userId", user.id().toString())
+                            .build()
+                    )
+                    .build();
+
+            Session session = Session.create(params);
+            
+            // Devolvemos la URL segura de Stripe a donde React tiene que enviar al usuario
+            return session.getUrl();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al crear la sesión de Stripe: " + e.getMessage());
+        }
+    }
+
+    public String createCustomerPortalSession(String userEmail) throws Exception {
+        // 1. Buscamos al cliente en Stripe usando su correo electrónico
+        CustomerSearchParams searchParams = CustomerSearchParams.builder()
+                .setQuery("email:'" + userEmail + "'")
+                .build();
+        
+        CustomerSearchResult result = com.stripe.model.Customer.search(searchParams);
+        
+        if (result.getData().isEmpty()) {
+            throw new RuntimeException("No se encontró un perfil de facturación para este correo.");
+        }
+        
+        // Extraemos el ID exacto que Stripe le asignó a tu cliente
+        String stripeCustomerId = result.getData().get(0).getId();
+
+        // 2. Creamos el ticket de entrada al Portal de Auto-Servicio.
+        // Usamos la "ruta completa" (fully qualified name) para que Java no lo confunda con el Session del Checkout
+        com.stripe.param.billingportal.SessionCreateParams params = 
+            com.stripe.param.billingportal.SessionCreateParams.builder()
+                .setCustomer(stripeCustomerId)
+                .setReturnUrl("http://localhost:5173/dashboard") // A dónde vuelve al salir del portal
+                .build();
+
+        com.stripe.model.billingportal.Session portalSession = 
+            com.stripe.model.billingportal.Session.create(params);
+
+        return portalSession.getUrl();
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/application/service/TradeService.java">
+package com.gomezcapital.trading_journal.application.service;
+
+import com.gomezcapital.trading_journal.domain.model.Portfolio;
+import com.gomezcapital.trading_journal.domain.model.Trade;
+import com.gomezcapital.trading_journal.domain.model.TradeImage;
+import com.gomezcapital.trading_journal.domain.ports.PortfolioRepositoryPort;
+import com.gomezcapital.trading_journal.domain.ports.TradeRepositoryPort;
+import com.gomezcapital.trading_journal.domain.ports.TradeImageRepositoryPort;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.DailySummaryResponse;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.UpdateTradeRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class TradeService {
+
+    private final TradeRepositoryPort tradeRepositoryPort;
+    private final TradeImageRepositoryPort tradeImageRepositoryPort;
+    private final PortfolioRepositoryPort portfolioRepositoryPort;
+
+    public Trade logNewTrade(Trade trade) {
+        validateNewTrade(trade);
+        Trade tradeToSave = new Trade(
+                trade.id(), trade.portfolioId(), trade.strategyId(), trade.playbookId(),
+                trade.asset(), trade.direction(), "OPEN",
+                trade.entryDate() != null ? trade.entryDate() : LocalDateTime.now(),
+                null, trade.entryPrice(), null, trade.positionSize(),
+                trade.takeProfit(), trade.stopLoss(), defaultToZero(trade.plannedRr()),
+                defaultToZero(trade.actualRr()), null, null,
+                defaultToZero(trade.commissions()), defaultToZero(trade.feesAndSwaps()),
+                BigDecimal.ZERO, BigDecimal.ZERO, trade.notes()
+        );
+        return tradeRepositoryPort.save(tradeToSave);
+    }
+
+    public List<Trade> getTradesByPortfolioId(UUID portfolioId) {
+        return tradeRepositoryPort.findByPortfolioId(portfolioId);
+    }
+
+    @Transactional
+    public Trade closeTrade(UUID tradeId, BigDecimal exitPrice, LocalDateTime exitDate, BigDecimal pnlNet) {
+        Trade existingTrade = tradeRepositoryPort.findById(tradeId)
+                .orElseThrow(() -> new IllegalArgumentException("El trade no existe."));
+
+        if ("CLOSED".equals(existingTrade.status())) {
+            throw new IllegalStateException("El trade ya se encuentra cerrado.");
+        }
+
+        BigDecimal finalPnl = pnlNet != null ? pnlNet : BigDecimal.ZERO;
+
+        Portfolio portfolio = portfolioRepositoryPort.findById(existingTrade.portfolioId())
+                .orElseThrow(() -> new IllegalArgumentException("El portfolio asociado no existe."));
+
+        BigDecimal newBalance = portfolio.currentBalance().add(finalPnl);
+        Portfolio updatedPortfolio = new Portfolio(
+                portfolio.id(), portfolio.userId(), portfolio.name(),
+                portfolio.initialBalance(), newBalance, portfolio.targetBalance(),
+                portfolio.currency(), portfolio.createdAt()
+        );
+        portfolioRepositoryPort.save(updatedPortfolio);
+
+        Trade closedTrade = new Trade(
+                existingTrade.id(), existingTrade.portfolioId(), existingTrade.strategyId(), existingTrade.playbookId(),
+                existingTrade.asset(), existingTrade.direction(), "CLOSED",
+                existingTrade.entryDate(), exitDate, existingTrade.entryPrice(), exitPrice,
+                existingTrade.positionSize(), existingTrade.takeProfit(), existingTrade.stopLoss(),
+                existingTrade.plannedRr(), existingTrade.actualRr(), existingTrade.mfePrice(), existingTrade.maePrice(), 
+                existingTrade.commissions(), existingTrade.feesAndSwaps(), finalPnl, finalPnl, existingTrade.notes()
+        );
+
+        return tradeRepositoryPort.save(closedTrade);
+    }
+
+    public Trade updateTrade(UUID tradeId, UpdateTradeRequest request) {
+        Trade existingTrade = tradeRepositoryPort.findById(tradeId)
+                .orElseThrow(() -> new IllegalArgumentException("El trade no existe."));
+
+        Trade updatedTrade = new Trade(
+                existingTrade.id(), existingTrade.portfolioId(), request.strategyId(), existingTrade.playbookId(),
+                request.asset().toUpperCase(), request.direction(), existingTrade.status(),
+                existingTrade.entryDate(), existingTrade.exitDate(), request.entryPrice(), request.exitPrice(),
+                request.positionSize(), request.takeProfit(), request.stopLoss(),
+                existingTrade.plannedRr(), existingTrade.actualRr(), 
+                request.mfePrice(), request.maePrice(), // <-- AQUÍ INSERTAMOS LOS NUEVOS PRECIOS
+                existingTrade.commissions(), existingTrade.feesAndSwaps(), 
+                request.pnlNet() != null ? request.pnlNet() : existingTrade.pnlGross(),
+                request.pnlNet() != null ? request.pnlNet() : existingTrade.pnlNet(), request.notes()
+        );
+
+        return tradeRepositoryPort.save(updatedTrade);
+    }
+
+    public List<DailySummaryResponse> getMonthlyCalendar(UUID portfolioId, int year, int month) {
+        List<Trade> allTrades = tradeRepositoryPort.findByPortfolioId(portfolioId);
+
+        return allTrades.stream()
+                .filter(trade -> "CLOSED".equals(trade.status()) && trade.exitDate() != null)
+                .filter(trade -> trade.exitDate().getYear() == year && trade.exitDate().getMonthValue() == month)
+                .collect(Collectors.groupingBy(trade -> trade.exitDate().toLocalDate()))
+                .entrySet().stream()
+                .map(entry -> {
+                    LocalDate date = entry.getKey();
+                    List<Trade> tradesOfThatDay = entry.getValue();
+                    
+                    int tradeCount = tradesOfThatDay.size();
+                    BigDecimal netPnl = tradesOfThatDay.stream()
+                            .map(trade -> trade.pnlNet() != null ? trade.pnlNet() : BigDecimal.ZERO)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    
+                    boolean isProfitable = netPnl.compareTo(BigDecimal.ZERO) > 0;
+
+                    return new DailySummaryResponse(date, tradeCount, netPnl, isProfitable);
+                })
+                .sorted(Comparator.comparing(DailySummaryResponse::date))
+                .toList();
+    }
+
+    public void addImageToTrade(UUID tradeId, String fileName) {
+        TradeImage newImage = new TradeImage(null, tradeId, fileName, LocalDateTime.now());
+        tradeImageRepositoryPort.save(newImage);
+    }
+
+    public List<String> getTradeImages(UUID tradeId) {
+        return tradeImageRepositoryPort.findByTradeId(tradeId)
+                .stream().map(TradeImage::fileName).toList();
+    }
+
+    private void validateNewTrade(Trade trade) {
+        if (trade.entryPrice() == null || trade.entryPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("El precio de entrada debe ser mayor a 0.");
+        }
+    }
+
+    private BigDecimal defaultToZero(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    // ==========================================
+    // IMPORTACIÓN DE CSV (SOPORTE EXACTO PARA TU MT5)
+    // ==========================================
+    @Transactional
+    public int importTradesFromCsv(UUID portfolioId, org.springframework.web.multipart.MultipartFile file) {
+        int importedCount = 0;
+        
+        Portfolio portfolio = portfolioRepositoryPort.findById(portfolioId)
+                .orElseThrow(() -> new IllegalArgumentException("El portafolio no existe."));
+        
+        BigDecimal totalPnlImported = BigDecimal.ZERO;
+
+        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(file.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+            String line;
+            boolean isFirstLine = true;
+            
+            while ((line = br.readLine()) != null) {
+                if (isFirstLine || line.trim().isEmpty()) {
+                    isFirstLine = false;
+                    continue;
+                }
+
+                // El "-1" asegura que mantenga las comas finales vacías en el arreglo
+                String[] columns = line.replace("\"", "").split(",", -1);
+                
+                if (columns.length < 14) continue; 
+
+                try {
+                    String type = columns[3].trim().toLowerCase(); 
+                    if (!type.equals("buy") && !type.equals("sell")) continue;
+                    
+                    String direction = type.equals("buy") ? "LONG" : "SHORT";
+                    BigDecimal positionSize = parseBigDecimalOrZero(columns[4]);
+                    String asset = columns[6].trim().toUpperCase();
+                    BigDecimal entryPrice = parseBigDecimalOrZero(columns[7]);
+                    BigDecimal exitPrice = parseBigDecimalOrZero(columns[8]);
+                    
+                    BigDecimal stopLoss = parsePriceOrNull(columns[9]);
+                    BigDecimal takeProfit = parsePriceOrNull(columns[10]);
+                    
+                    BigDecimal commission = parseBigDecimalOrZero(columns[11]);
+                    BigDecimal swap = parseBigDecimalOrZero(columns[12]);
+                    BigDecimal profit = parseBigDecimalOrZero(columns[13]);
+                    
+                    BigDecimal pnlNet = profit.add(swap).add(commission);
+                    
+                    // Tu MT5 exporta fechas en formato ISO directo (ej. 2026-04-10T14:11:47)
+                    LocalDateTime entryDate = LocalDateTime.parse(columns[1].trim());
+                    LocalDateTime exitDate = LocalDateTime.parse(columns[2].trim());
+
+                    Trade newTrade = new Trade(
+                            null, portfolioId, null, null, asset, direction, "CLOSED",
+                            entryDate, exitDate, entryPrice, exitPrice, positionSize,
+                            takeProfit, stopLoss, null, null, null, null,
+                            commission, swap, profit, pnlNet, "Importado desde MT5"
+                    );
+
+                    tradeRepositoryPort.save(newTrade);
+                    totalPnlImported = totalPnlImported.add(pnlNet);
+                    importedCount++;
+
+                } catch (Exception e) {
+                    log.error("Error parseando línea CSV: {}", line, e);
+                }
+            }
+
+            if (importedCount > 0) {
+                Portfolio updatedPortfolio = new Portfolio(
+                        portfolio.id(), portfolio.userId(), portfolio.name(),
+                        portfolio.initialBalance(), portfolio.currentBalance().add(totalPnlImported), 
+                        portfolio.targetBalance(), portfolio.currency(), portfolio.createdAt()
+                );
+                portfolioRepositoryPort.save(updatedPortfolio);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error al leer el archivo CSV: " + e.getMessage());
+        }
+
+        return importedCount;
+    }
+
+    // --- MÉTODOS DE SEGURIDAD PARA TEXTO VACÍO ---
+    private BigDecimal parseBigDecimalOrZero(String val) {
+        if (val == null || val.trim().isEmpty()) return BigDecimal.ZERO;
+        try { return new BigDecimal(val.trim()); } catch (Exception e) { return BigDecimal.ZERO; }
+    }
+
+    private BigDecimal parsePriceOrNull(String val) {
+        if (val == null || val.trim().isEmpty()) return null;
+        try { 
+            BigDecimal bd = new BigDecimal(val.trim());
+            return bd.compareTo(BigDecimal.ZERO) == 0 ? null : bd;
+        } catch (Exception e) { return null; }
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/model/Portfolio.java">
+package com.gomezcapital.trading_journal.domain.model;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public record Portfolio(
+
+    UUID id,
+    UUID userId,
+    String name,
+    BigDecimal initialBalance,
+    BigDecimal currentBalance,
+    BigDecimal targetBalance,
+    String currency,
+    LocalDateTime createdAt
+) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/model/Strategy.java">
+package com.gomezcapital.trading_journal.domain.model;
+
+import java.util.UUID;
+
+public record Strategy(
+
+    UUID id,
+    UUID portfolioId,
+    String name,
+    String description,
+    String rules
+) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/model/Trade.java">
+package com.gomezcapital.trading_journal.domain.model;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public record Trade(
+    UUID id,
+    UUID portfolioId,
+    UUID strategyId,
+    UUID playbookId,
+    String asset,
+    String direction,
+    String status,
+    LocalDateTime entryDate,
+    LocalDateTime exitDate,
+    BigDecimal entryPrice,
+    BigDecimal exitPrice,
+    BigDecimal positionSize,
+    BigDecimal takeProfit,
+    BigDecimal stopLoss,
+    BigDecimal plannedRr,
+    BigDecimal actualRr,
+    BigDecimal mfePrice,
+    BigDecimal maePrice,
+    BigDecimal commissions,
+    BigDecimal feesAndSwaps,
+    BigDecimal pnlGross,
+    BigDecimal pnlNet,
+    String notes
+) {
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/model/TradeImage.java">
+package com.gomezcapital.trading_journal.domain.model;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+public record TradeImage(
+
+    UUID id,
+    UUID tradeId,
+    String fileName,
+    LocalDateTime createdAt
+){
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/model/TradeMetrics.java">
+package com.gomezcapital.trading_journal.domain.model;
+
+import java.math.BigDecimal;
+
+// Record para almacenar los calculos matematicos del dasboard
+
+public record TradeMetrics(
+    int totalTrades,
+    int winningTrades,
+    int losingTrades,
+    BigDecimal winRate,
+    BigDecimal profitFactor,
+    BigDecimal totalPnl
+
+) {
+
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/model/User.java">
+package com.gomezcapital.trading_journal.domain.model;
+
+import java.util.UUID;
+
+public record User(
+
+    UUID id,
+    String email,
+    String passwordHash,
+    String alias,
+    String role
+) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/ports/PortfolioRepositoryPort.java">
+package com.gomezcapital.trading_journal.domain.ports;
+
+import com.gomezcapital.trading_journal.domain.model.Portfolio; 
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface PortfolioRepositoryPort {
+
+    Portfolio save(Portfolio portfolio);
+    Optional<Portfolio> findById(UUID id);
+    List<Portfolio> findByUserId(UUID userId);
+    void deleteById(UUID id);
+
+
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/ports/StoragePort.java">
+package com.gomezcapital.trading_journal.domain.ports;
+
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+
+
+public interface StoragePort {
+
+    String uploadTradeImage(String tradeId, MultipartFile file);
+
+    Resource loadTradeImage(String filename);
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/ports/StrategyRepositoryPort.java">
+package com.gomezcapital.trading_journal.domain.ports;
+
+import com.gomezcapital.trading_journal.domain.model.Strategy;
+import java.util.List;
+import java.util.UUID;
+
+
+public interface StrategyRepositoryPort {
+
+    Strategy save(Strategy strategy);
+    List<Strategy> findByPortfolioId(UUID portfolioId);
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/ports/TradeImageRepositoryPort.java">
+package com.gomezcapital.trading_journal.domain.ports;
+
+import com.gomezcapital.trading_journal.domain.model.TradeImage;
+import java.util.List;
+import java.util.UUID;
+
+public interface TradeImageRepositoryPort {
+    
+    TradeImage save(TradeImage tradeImage);
+    List<TradeImage> findByTradeId(UUID tradeId);
+    void deleteById(UUID id);
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/ports/TradeRepositoryPort.java">
+package com.gomezcapital.trading_journal.domain.ports;
+
+import com.gomezcapital.trading_journal.domain.model.Trade;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface TradeRepositoryPort {
+   
+    Trade save(Trade trade);
+    Optional<Trade> findById(UUID id);
+    List<Trade> findByPortfolioId(UUID portfolioId);
+    void deleteById(UUID id);
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/domain/ports/UserRepositoryPort.java">
+package com.gomezcapital.trading_journal.domain.ports;
+
+import com.gomezcapital.trading_journal.domain.model.User;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface UserRepositoryPort {
+    Optional<User> findByEmail(String email);
+    Optional<User> findById(UUID id); // <-- NUEVA FUNCIÓN
+    boolean existsByEmail(String email);
+    User save(User user);
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/config/CorsConfig.java">
+package com.gomezcapital.trading_journal.infrastructure.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class CorsConfig {
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("*") // Permite peticiones de cualquier frontend
+                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                        .allowedHeaders("*");
+            }
+        };
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/config/SwaggerConfig.java">
+package com.gomezcapital.trading_journal.infrastructure.config;
+
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@OpenAPIDefinition(
+
+    info = @Info(
+        title = "API de Trading Journal",
+        version = "1.0",
+        description = "Documentacion interactiva del motor de Trading Journal."
+
+    ),
+
+    // Todas las rutas por defecto requieren el candado
+    security = {@SecurityRequirement(name = "bearerAuth")}
+)
+
+@SecurityScheme(
+
+    name = "bearerAuth",
+    description = "Token para rutas privadas",
+    type = SecuritySchemeType.HTTP,
+    scheme = "bearer",
+    bearerFormat = "JWT"
+
+)
+
+public class SwaggerConfig {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/adapter/PortfolioRepositoryAdapter.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.adapter;
+
+import com.gomezcapital.trading_journal.domain.model.Portfolio;
+import com.gomezcapital.trading_journal.domain.ports.PortfolioRepositoryPort;
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.PortfolioEntity;
+import com.gomezcapital.trading_journal.infrastructure.persistence.repository.PortfolioJpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Component 
+@RequiredArgsConstructor
+public class PortfolioRepositoryAdapter implements PortfolioRepositoryPort {
+
+    private final PortfolioJpaRepository portfolioJpaRepository;
+
+    @Override
+    public Portfolio save(Portfolio portfolio) {
+        PortfolioEntity entity = toEntity(portfolio);
+        PortfolioEntity savedEntity = portfolioJpaRepository.save(entity);
+        return toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<Portfolio> findById(UUID id) {
+        return portfolioJpaRepository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public List<Portfolio> findByUserId(UUID userId) {
+        return portfolioJpaRepository.findByUserId(userId).stream()
+                .map(this::toDomain).toList();
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        portfolioJpaRepository.deleteById(id);
+    }
+
+    private PortfolioEntity toEntity(Portfolio portfolio) {
+        if (portfolio == null) return null;
+        return PortfolioEntity.builder()
+                .id(portfolio.id())
+                .userId(portfolio.userId())
+                .name(portfolio.name())
+                .initialBalance(portfolio.initialBalance())
+                .currentBalance(portfolio.currentBalance())
+                .targetBalance(portfolio.targetBalance()) // <-- NUEVO CAMPO AÑADIDO
+                .currency(portfolio.currency())
+                .createdAt(portfolio.createdAt())
+                .build();
+    }
+
+    private Portfolio toDomain(PortfolioEntity entity) {
+        if (entity == null) return null;
+        return new Portfolio(
+                entity.getId(),
+                entity.getUserId(),
+                entity.getName(),
+                entity.getInitialBalance(),
+                entity.getCurrentBalance(),
+                entity.getTargetBalance(), // <-- NUEVO CAMPO AÑADIDO
+                entity.getCurrency(),
+                entity.getCreatedAt()
+        );
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/adapter/StrategyRepositoryAdapter.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.adapter;
+
+import com.gomezcapital.trading_journal.domain.model.Strategy;
+import com.gomezcapital.trading_journal.domain.ports.StrategyRepositoryPort;
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.StrategyEntity;
+import com.gomezcapital.trading_journal.infrastructure.persistence.repository.StrategyJpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.UUID;
+
+@Component
+@RequiredArgsConstructor
+
+public class StrategyRepositoryAdapter implements StrategyRepositoryPort {
+
+    private final StrategyJpaRepository repository;
+
+    @Override
+    public Strategy save(Strategy strategy) {
+        StrategyEntity entity = StrategyEntity.builder()
+                .id(strategy.id())
+                .portfolioId(strategy.portfolioId())
+                .name(strategy.name())
+                .description(strategy.description())
+                .rules(strategy.rules())
+                .build();
+
+        StrategyEntity savedEntity = repository.save(entity);
+
+        return new Strategy(
+            savedEntity.getId(), savedEntity.getPortfolioId(),
+            savedEntity.getName(), savedEntity.getDescription(), savedEntity.getRules()
+        );
+    }
+
+    @Override
+    public List<Strategy> findByPortfolioId(UUID portfolioId) {
+        return repository.findByPortfolioId(portfolioId).stream()
+                .map(entity -> new Strategy(
+                    entity.getId(), entity.getPortfolioId(),
+                    entity.getName(), entity.getDescription(),entity.getRules()
+                )).toList();
+    }
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/adapter/TradeImageRepositoryAdapter.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.adapter;
+
+import com.gomezcapital.trading_journal.domain.model.TradeImage;
+import com.gomezcapital.trading_journal.domain.ports.TradeImageRepositoryPort;
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.TradeImageEntity;
+import com.gomezcapital.trading_journal.infrastructure.persistence.repository.TradeImageJpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.UUID;
+
+@Component
+@RequiredArgsConstructor
+public class TradeImageRepositoryAdapter implements TradeImageRepositoryPort {
+
+    private final TradeImageJpaRepository repository;
+
+    @Override
+    public TradeImage save(TradeImage tradeImage) {
+        TradeImageEntity entity = TradeImageEntity.builder()
+                .id(tradeImage.id())
+                .tradeId(tradeImage.tradeId())
+                .fileName(tradeImage.fileName())
+                .createdAt(tradeImage.createdAt())
+                .build();
+                
+        TradeImageEntity savedEntity = repository.save(entity);
+        
+        return new TradeImage(
+                savedEntity.getId(),
+                savedEntity.getTradeId(),
+                savedEntity.getFileName(),
+                savedEntity.getCreatedAt()
+        );
+    }
+
+    @Override
+    public List<TradeImage> findByTradeId(UUID tradeId) {
+        return repository.findByTradeId(tradeId).stream()
+                .map(entity -> new TradeImage(
+                        entity.getId(),
+                        entity.getTradeId(),
+                        entity.getFileName(),
+                        entity.getCreatedAt()
+                )).toList();
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        repository.deleteById(id);
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/adapter/TradeRepositoryAdapter.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.adapter;
+
+import com.gomezcapital.trading_journal.domain.model.Trade;
+import com.gomezcapital.trading_journal.domain.ports.TradeRepositoryPort;
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.PortfolioEntity;
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.TradeEntity;
+import com.gomezcapital.trading_journal.infrastructure.persistence.repository.TradeJpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Component
+@RequiredArgsConstructor
+public class TradeRepositoryAdapter implements TradeRepositoryPort {
+
+    private final TradeJpaRepository tradeJpaRepository;
+
+    @Override
+    public Trade save(Trade trade) {
+        TradeEntity entity = toEntity(trade);
+        TradeEntity savedEntity = tradeJpaRepository.save(entity);
+        return toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<Trade> findById(UUID id) {
+        return tradeJpaRepository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public List<Trade> findByPortfolioId(UUID portfolioId) { // <-- CAMBIO
+        return tradeJpaRepository.findByPortfolioId(portfolioId).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        tradeJpaRepository.deleteById(id);
+    }
+
+    private TradeEntity toEntity(Trade trade) {
+        if (trade == null) return null;
+
+        PortfolioEntity portfolioRef = null;
+        if (trade.portfolioId() != null) {
+            portfolioRef = new PortfolioEntity();
+            portfolioRef.setId(trade.portfolioId());
+        }
+        
+        return TradeEntity.builder()
+                .id(trade.id())
+                .portfolio(portfolioRef) // <-- CAMBIO
+                .strategyId(trade.strategyId())
+                .playbookId(trade.playbookId())
+                .asset(trade.asset())
+                .direction(trade.direction())
+                .status(trade.status())
+                .entryDate(trade.entryDate())
+                .exitDate(trade.exitDate())
+                .entryPrice(trade.entryPrice())
+                .exitPrice(trade.exitPrice())
+                .positionSize(trade.positionSize())
+                .takeProfit(trade.takeProfit())
+                .stopLoss(trade.stopLoss())
+                .pnlGross(trade.pnlGross())
+                .pnlNet(trade.pnlNet())
+                .notes(trade.notes())
+                // ELIMINADO imageName
+                .build();
+    }
+
+    private Trade toDomain(TradeEntity entity) {
+        if (entity == null) return null;
+
+        return new Trade(
+                entity.getId(),
+                entity.getPortfolio() != null ? entity.getPortfolio().getId() : null, // <-- CAMBIO
+                entity.getStrategyId(),
+                entity.getPlaybookId(),
+                entity.getAsset(),
+                entity.getDirection(),
+                entity.getStatus(),
+                entity.getEntryDate(),
+                entity.getExitDate(),
+                entity.getEntryPrice(),
+                entity.getExitPrice(),
+                entity.getPositionSize(),
+                entity.getTakeProfit(),
+                entity.getStopLoss(),
+                entity.getPlannedRr(), 
+                entity.getActualRr(), 
+                entity.getMfePrice(), 
+                entity.getMaePrice(), 
+                entity.getCommissions(), 
+                entity.getFeesAndSwaps(),
+                entity.getPnlGross(),
+                entity.getPnlNet(),
+                entity.getNotes()
+                // ELIMINADO imageName
+        );
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/adapter/UserRepositoryAdapter.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.adapter;
+
+import com.gomezcapital.trading_journal.domain.model.User;
+import com.gomezcapital.trading_journal.domain.ports.UserRepositoryPort;
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.UserEntity;
+import com.gomezcapital.trading_journal.infrastructure.persistence.repository.JpaUserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.UUID; // <-- ¡ESTE ES EL IMPORT QUE FALTABA!
+
+@Component
+@RequiredArgsConstructor
+public class UserRepositoryAdapter implements UserRepositoryPort {
+
+    private final JpaUserRepository jpaUserRepository;
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return jpaUserRepository.findByEmail(email).map(this::toDomain);
+    }
+
+    @Override
+    public Optional<User> findById(UUID id) {
+        return jpaUserRepository.findById(id).map(this::toDomain);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return jpaUserRepository.existsByEmail(email);
+    }
+
+    @Override
+    public User save(User user) {
+        UserEntity entity = UserEntity.builder()
+                .id(user.id())
+                .email(user.email())
+                .passwordHash(user.passwordHash())
+                .alias(user.alias())
+                .role(user.role() != null ? user.role() : "ROLE_FREE") // <-- ASIGNAMOS EL ROL
+                .build();
+        return toDomain(jpaUserRepository.save(entity));
+    }
+
+    private User toDomain(UserEntity entity) {
+        return new User(entity.getId(), entity.getEmail(), entity.getPasswordHash(), entity.getAlias(), entity.getRole()); // <-- RECUPERAMOS EL ROL
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/entity/PortfolioEntity.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = "portfolios")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+
+public class PortfolioEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
+
+    @Column(nullable = false, length = 100)
+    private String name;
+
+    @Column(name = "initial_balance", nullable = false, precision = 18, scale = 2)
+    private BigDecimal initialBalance;
+
+    @Column(name = "current_balance", nullable = false, precision = 18, scale = 2)
+    private BigDecimal currentBalance;
+
+    @Column(name = "target_balance", precision = 18, scale = 2)
+    private BigDecimal targetBalance;
+
+    @Column(length = 10)
+    private String currency;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/entity/StrategyEntity.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.util.UUID;
+
+@Entity
+@Table(name = "trading_strategies")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class StrategyEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "portafolio_id", nullable = false)
+    private UUID portfolioId;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String rules;
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/entity/TradeEntity.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = "trades")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class TradeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "portfolio_id", nullable = false)
+    private PortfolioEntity portfolio;
+
+    @Column(name = "strategy_id")
+    private UUID strategyId;
+
+    @Column(name = "playbook_id")
+    private UUID playbookId;
+
+    @Column(nullable = false, length = 20)
+    private String asset;
+
+    @Column(length = 10)
+    private String direction;
+
+    @Column(length = 20)
+    private String status;
+
+    @Column(name = "entry_date", nullable = false)
+    private LocalDateTime entryDate;
+
+    @Column(name = "exit_date")
+    private LocalDateTime exitDate;
+
+    @Column(name = "entry_price", nullable = false, precision = 18, scale = 8)
+    private BigDecimal entryPrice;
+
+    @Column(name = "exit_price", precision = 18, scale = 8)
+    private BigDecimal exitPrice;
+
+    @Column(name = "position_size", nullable = false, precision = 18, scale = 8)
+    private BigDecimal positionSize;
+
+    @Column(name = "take_profit", precision = 18, scale = 8)
+    private BigDecimal takeProfit;
+
+    @Column(name = "stop_loss", precision = 18, scale = 8)
+    private BigDecimal stopLoss;
+
+    @Column(name = "planned_rr", precision = 5, scale = 2)
+    private BigDecimal plannedRr;
+
+    @Column(name = "actual_rr", precision = 5, scale = 2)
+    private BigDecimal actualRr;
+
+    @Column(name = "mfe_price", precision = 18, scale = 8)
+    private BigDecimal mfePrice;
+
+    @Column(name = "mae_price", precision = 18, scale = 8)
+    private BigDecimal maePrice;
+
+    @Column(name = "commissions", precision = 10, scale = 2)
+    private BigDecimal commissions;
+
+    @Column(name = "fees_and_swaps", precision = 10, scale = 2)
+    private BigDecimal feesAndSwaps;
+
+    @Column(name = "pnl_gross", precision = 10, scale = 2)
+    private BigDecimal pnlGross;
+
+    @Column(name = "pnl_net", precision = 10, scale = 2)
+    private BigDecimal pnlNet;
+
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/entity/TradeImageEntity.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = "trade_images")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+
+public class TradeImageEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "trade_id", nullable = false)
+    private UUID tradeId;
+
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/entity/UserEntity.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.UUID;
+
+@Entity
+@Table(name = "users")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+
+public class UserEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    // El email debe ser unico en toda la base de datos
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    @Column(length = 50)
+    private String alias;
+
+    @Column
+    private String role;
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/repository/JpaUserRepository.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.repository;
+
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.UserEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface JpaUserRepository extends JpaRepository<UserEntity, UUID> {
+
+    Optional<UserEntity> findByEmail(String email);
+    boolean existsByEmail(String email);
+
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/repository/PortfolioJpaRepository.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.repository;
+
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.PortfolioEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+
+public interface PortfolioJpaRepository extends JpaRepository<PortfolioEntity, UUID> {
+    
+    List<PortfolioEntity> findByUserId(UUID userId);
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/repository/StrategyJpaRepository.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.repository;
+
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.StrategyEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface StrategyJpaRepository extends JpaRepository<StrategyEntity, UUID> {
+    List<StrategyEntity> findByPortfolioId(UUID portfolioId);
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/repository/TradeImageJpaRepository.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.repository;
+
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.TradeImageEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+
+public interface TradeImageJpaRepository extends JpaRepository<TradeImageEntity, UUID> {
+    List<TradeImageEntity> findByTradeId(UUID tradeId);
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/persistence/repository/TradeJpaRepository.java">
+package com.gomezcapital.trading_journal.infrastructure.persistence.repository;
+
+import com.gomezcapital.trading_journal.infrastructure.persistence.entity.TradeEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.UUID;
+
+@Repository
+public interface TradeJpaRepository extends JpaRepository<TradeEntity, UUID> {
+
+    List<TradeEntity> findByPortfolioId(UUID portfolioId);
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/controller/AnalyticsController.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.controller;
+
+import com.gomezcapital.trading_journal.application.service.AnalyticsService;
+import com.gomezcapital.trading_journal.application.service.PortfolioService;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.AdvancedAnalyticsResponse;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.TradeMetricsResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/analytics")
+@RequiredArgsConstructor
+public class AnalyticsController {
+
+    private final AnalyticsService analyticsService;
+    private final PortfolioService portfolioService;
+
+    @GetMapping("/portfolio/{portfolioId}")
+    public ResponseEntity<TradeMetricsResponse> getMetrics(@PathVariable UUID portfolioId, Authentication authentication) {
+        // <-- EL ESCUDO: Si no es su portafolio, lanzará error 403 antes de calcular nada -->
+        portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
+        return ResponseEntity.ok(analyticsService.calculateMetrics(portfolioId));
+    }
+
+    @GetMapping("/portfolio/{portfolioId}/advanced")
+    public ResponseEntity<AdvancedAnalyticsResponse> getAdvancedAnalytics(@PathVariable UUID portfolioId, Authentication authentication) {
+        portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
+        return ResponseEntity.ok(analyticsService.calculateAdvancedAnalytics(portfolioId));
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/controller/AuthController.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.controller;
+
+import com.gomezcapital.trading_journal.application.service.AuthService;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.AuthenticationResponse;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.GoogleLoginRequest;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.LoginRequest;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.RegisterRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
+    }
+
+    // <-- NUEVO ENDPOINT DE GOOGLE -->
+    @PostMapping("/google")
+    public ResponseEntity<AuthenticationResponse> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(authService.authenticateWithGoogle(request.token()));
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/controller/CheckoutController.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.controller;
+
+import com.gomezcapital.trading_journal.application.service.StripeService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/checkout")
+@RequiredArgsConstructor
+public class CheckoutController {
+
+    private final StripeService stripeService;
+
+    @PostMapping("/create-session")
+    public ResponseEntity<Map<String, String>> createCheckoutSession() {
+        try {
+            String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            String sessionUrl = stripeService.createCheckoutSession(userEmail);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("url", sessionUrl);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al crear sesión: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    // <-- NUESTRO NUEVO ENDPOINT DEL PORTAL -->
+    @PostMapping("/portal")
+    public ResponseEntity<Map<String, String>> createPortalSession() {
+        try {
+            // Obtenemos el email del usuario que tiene la sesión iniciada
+            String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+            
+            String portalUrl = stripeService.createCustomerPortalSession(userEmail);
+            
+            Map<String, String> response = new HashMap<>();
+            response.put("url", portalUrl);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Error al abrir el portal: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/controller/PortfolioController.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.controller;
+
+import com.gomezcapital.trading_journal.application.service.PortfolioService;
+import com.gomezcapital.trading_journal.domain.model.Portfolio;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.CreatePortfolioRequest;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.UpdateTargetRequest;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.UpdatePortfolioBalancesRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/portfolios")
+@RequiredArgsConstructor
+public class PortfolioController {
+
+    private final PortfolioService portfolioService;
+
+    @GetMapping
+    public ResponseEntity<List<Portfolio>> getMyPortfolios(Authentication authentication) {
+        return ResponseEntity.ok(portfolioService.getUserPortfolios(authentication.getName()));
+    }
+
+    @PostMapping
+    public ResponseEntity<Portfolio> createPortfolio(Authentication authentication, @RequestBody CreatePortfolioRequest request) {
+        Portfolio portfolio = portfolioService.createPortfolio(
+                authentication.getName(), 
+                request.name(), 
+                request.initialBalance(), 
+                request.targetBalance(), 
+                request.currency()
+        );
+        return ResponseEntity.ok(portfolio);
+    }
+
+    @PatchMapping("/{id}/target")
+    public ResponseEntity<Portfolio> updateTargetBalance(
+            @PathVariable UUID id, 
+            @RequestBody UpdateTargetRequest request,
+            Authentication authentication) { // <-- Leemos el token
+        return ResponseEntity.ok(portfolioService.updateTargetBalance(id, request.targetBalance(), authentication.getName()));
+    }
+
+    @PatchMapping("/{id}/balances")
+    public ResponseEntity<Portfolio> updateBalances(
+            @PathVariable UUID id, 
+            @RequestBody UpdatePortfolioBalancesRequest request,
+            Authentication authentication) { // <-- Leemos el token
+        return ResponseEntity.ok(portfolioService.updateBalances(
+                id, request.initialBalance(), request.currentBalance(), request.targetBalance(), authentication.getName()
+        ));
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/controller/StrategyController.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.controller;
+
+import com.gomezcapital.trading_journal.application.service.StrategyService;
+import com.gomezcapital.trading_journal.application.service.PortfolioService; // <-- NUEVO IMPORT
+import com.gomezcapital.trading_journal.domain.model.Strategy;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.CreateStrategyRequest;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.StrategyResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication; // <-- NUEVO IMPORT
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/strategies")
+@RequiredArgsConstructor
+@Slf4j
+public class StrategyController {
+
+    private final StrategyService strategyService;
+    private final PortfolioService portfolioService; // <-- INYECTAMOS EL ESCUDO
+
+    @PostMapping
+    public ResponseEntity<StrategyResponse> createStrategy(@RequestBody CreateStrategyRequest request, Authentication authentication) {
+        // <-- ESCUDO ACTIVADO -->
+        portfolioService.validatePortfolioOwnership(request.portfolioId(), authentication.getName());
+        
+        Strategy strategy = strategyService.creatStrategy(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDto(strategy));
+    }
+
+    @GetMapping("/portfolio/{portfolioId}")
+    public ResponseEntity<List<StrategyResponse>> getStrategiesByAccount(@PathVariable UUID portfolioId, Authentication authentication) {
+        // <-- ESCUDO ACTIVADO -->
+        portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
+        
+        List<Strategy> strategies = strategyService.getStrategiesByPortfolioId(portfolioId);
+        List<StrategyResponse> responseList = strategies.stream().map(this::toResponseDto).toList();
+        return ResponseEntity.ok(responseList);
+    }
+
+    private StrategyResponse toResponseDto(Strategy strategy) {
+        return new StrategyResponse(
+            strategy.id(), strategy.portfolioId(),
+            strategy.name(), strategy.description(), strategy.rules()
+        );
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/controller/StripeWebhookController.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.controller;
+
+import com.gomezcapital.trading_journal.domain.model.User;
+import com.gomezcapital.trading_journal.domain.ports.UserRepositoryPort;
+import com.stripe.exception.SignatureVerificationException;
+import com.stripe.exception.EventDataObjectDeserializationException;
+import com.stripe.model.Event;
+import com.stripe.model.checkout.Session;
+import com.stripe.model.Subscription;
+import com.stripe.net.Webhook;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/v1/webhooks")
+@RequiredArgsConstructor
+@Slf4j
+public class StripeWebhookController {
+
+    private final UserRepositoryPort userRepositoryPort;
+
+    @Value("${stripe.webhook.secret}")
+    private String endpointSecret;
+
+    @PostMapping("/stripe")
+    public ResponseEntity<String> handleStripeWebhook(
+            @RequestBody String payload,
+            @RequestHeader("Stripe-Signature") String sigHeader) {
+
+        Event event;
+        try {
+            event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
+        } catch (SignatureVerificationException e) {
+            log.error("⚠️ [WEBHOOK] Firma inválida.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Firma inválida");
+        }
+
+        try {
+            // 1. EVENTO DE PAGO O NUEVA SUSCRIPCIÓN (SUBIR A PRO)
+            if ("checkout.session.completed".equals(event.getType())) {
+                log.info("💰 [WEBHOOK] Procesando pago exitoso...");
+                Session session = (Session) event.getDataObjectDeserializer().deserializeUnsafe();
+
+                if (session != null) {
+                    String userId = session.getMetadata() != null ? session.getMetadata().get("userId") : null;
+                    String email = session.getCustomerEmail();
+                    if (email == null && session.getCustomerDetails() != null) {
+                        email = session.getCustomerDetails().getEmail();
+                    }
+                    changeUserRole(userId, email, "ROLE_PRO");
+                }
+            } 
+            else if ("customer.subscription.created".equals(event.getType())) {
+                log.info("📈 [WEBHOOK] Procesando nueva suscripción...");
+                Subscription subscription = (Subscription) event.getDataObjectDeserializer().deserializeUnsafe();
+
+                if (subscription != null) {
+                    String userId = subscription.getMetadata() != null ? subscription.getMetadata().get("userId") : null;
+                    changeUserRole(userId, null, "ROLE_PRO");
+                }
+            }
+            // 2. <-- NUEVO EVENTO: CANCELACIÓN DE SUSCRIPCIÓN (BAJAR A FREE) -->
+            else if ("customer.subscription.deleted".equals(event.getType())) {
+                log.info("📉 [WEBHOOK] ¡Alerta! Una suscripción ha sido cancelada.");
+                Subscription subscription = (Subscription) event.getDataObjectDeserializer().deserializeUnsafe();
+
+                if (subscription != null) {
+                    String userId = subscription.getMetadata() != null ? subscription.getMetadata().get("userId") : null;
+                    
+                    // Si perdemos los metadatos al cancelar, usamos un truco para buscar por el ID de cliente de Stripe
+                    // Pero asumiendo que viajan bien, usamos nuestro método:
+                    changeUserRole(userId, null, "ROLE_FREE");
+                }
+            }
+
+        } catch (EventDataObjectDeserializationException e) {
+            log.error("❌ [WEBHOOK] Error crítico al procesar paquete de Stripe: {}", e.getMessage());
+        }
+
+        return ResponseEntity.ok("Webhook procesado");
+    }
+
+    // <-- MÉTODO UNIFICADO PARA SUBIR O BAJAR DE ROL -->
+    private void changeUserRole(String userIdString, String backupEmail, String newRole) {
+        boolean userUpdated = false;
+
+        if (userIdString != null && !userIdString.isEmpty()) {
+            try {
+                UUID userId = UUID.fromString(userIdString);
+                Optional<User> userOptional = userRepositoryPort.findById(userId);
+                
+                if (userOptional.isPresent()) {
+                    updateRoleInDatabase(userOptional.get(), newRole);
+                    userUpdated = true;
+                    log.info("✅ Rol actualizado a {} para el usuario {} (Por ID).", newRole, userOptional.get().email());
+                }
+            } catch (Exception e) {
+                log.error("❌ Error procesando UUID: {}", e.getMessage());
+            }
+        }
+
+        if (!userUpdated && backupEmail != null && !backupEmail.isEmpty()) {
+             Optional<User> userOptional = userRepositoryPort.findByEmail(backupEmail);
+             if(userOptional.isPresent()){
+                 updateRoleInDatabase(userOptional.get(), newRole);
+                 log.info("✅ Rol actualizado a {} para el usuario {} (Por Email).", newRole, backupEmail);
+             }
+        } else if (!userUpdated) {
+            log.warn("⚠️ [WEBHOOK] No se pudo cambiar el rol a {}. Faltan datos de identificación.", newRole);
+        }
+    }
+
+    private void updateRoleInDatabase(User user, String newRole) {
+        User updatedUser = new User(
+                user.id(), user.email(), user.passwordHash(), 
+                user.alias(), newRole // Aquí se inyecta ROLE_PRO o ROLE_FREE
+        );
+        userRepositoryPort.save(updatedUser);
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/controller/TradeController.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.controller;
+
+import com.gomezcapital.trading_journal.application.service.TradeService;
+import com.gomezcapital.trading_journal.application.service.PortfolioService; // <-- NUEVO IMPORT
+import com.gomezcapital.trading_journal.domain.model.Trade;
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.*;
+import com.gomezcapital.trading_journal.domain.ports.StoragePort;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication; // <-- NUEVO IMPORT
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/v1/trades")
+@RequiredArgsConstructor
+public class TradeController {
+
+    private final TradeService tradeService;
+    private final StoragePort storagePort;
+    private final PortfolioService portfolioService; // <-- INYECTAMOS EL ESCUDO
+
+    @PostMapping
+    public ResponseEntity<TradeResponse> createTrade(@RequestBody CreateTradeRequest request, Authentication authentication) {
+        // <-- ESCUDO ACTIVADO -->
+        portfolioService.validatePortfolioOwnership(request.portfolioId(), authentication.getName());
+        
+        Trade tradeToCreate = new Trade(
+                null, request.portfolioId(), request.strategyId(), null,
+                request.asset(), request.direction(), null, null, null,
+                request.entryPrice(), null, request.positionSize(), request.takeProfit(), request.stopLoss(),
+                null, null, null, null, null, null, null, null, request.notes()
+        );
+        Trade savedTrade = tradeService.logNewTrade(tradeToCreate);
+        return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDto(savedTrade));
+    }
+
+    @GetMapping("/portfolio/{portfolioId}")
+    public ResponseEntity<List<TradeResponse>> getTradesByPortfolio(@PathVariable UUID portfolioId, Authentication authentication) {
+        // <-- ESCUDO ACTIVADO -->
+        portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
+        
+        List<TradeResponse> responseList = tradeService.getTradesByPortfolioId(portfolioId)
+                .stream().map(this::toResponseDto).toList();
+        return ResponseEntity.ok(responseList);
+    }
+
+    // ==========================================
+    // ENDPOINT: CALENDARIO MENSUAL
+    // ==========================================
+    @GetMapping("/portfolio/{portfolioId}/calendar")
+    public ResponseEntity<List<DailySummaryResponse>> getMonthlyCalendar(
+            @PathVariable UUID portfolioId,
+            @RequestParam int year,
+            @RequestParam int month,
+            Authentication authentication) {
+        
+        // <-- ESCUDO ACTIVADO -->
+        portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
+        
+        List<DailySummaryResponse> calendar = tradeService.getMonthlyCalendar(portfolioId, year, month);
+        return ResponseEntity.ok(calendar);
+    }
+
+    @PatchMapping("/{tradeId}/close")
+    public ResponseEntity<TradeResponse> closeTrade(@PathVariable UUID tradeId, @RequestBody CloseTradeRequest request) {
+        LocalDateTime exitDate = request.exitDate() != null ? request.exitDate() : LocalDateTime.now();
+        Trade closedTrade = tradeService.closeTrade(tradeId, request.exitPrice(), exitDate, request.pnlNet());
+        return ResponseEntity.ok(toResponseDto(closedTrade));
+    }
+
+    @PutMapping("/{tradeId}")
+    public ResponseEntity<TradeResponse> updateTrade(@PathVariable UUID tradeId, @RequestBody UpdateTradeRequest request) {
+        Trade updatedTrade = tradeService.updateTrade(tradeId, request);
+        return ResponseEntity.ok(toResponseDto(updatedTrade));
+    }
+
+    @PostMapping("/{tradeId}/image")
+    public ResponseEntity<String> uploadImage(@PathVariable UUID tradeId, @RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) return ResponseEntity.badRequest().body("Archivo vacío.");
+        
+        String fileName = storagePort.uploadTradeImage(tradeId.toString(), file);
+        tradeService.addImageToTrade(tradeId, fileName);
+        
+        return ResponseEntity.ok("Imagen añadida a la galería exitosamente.");
+    }
+
+    @PostMapping("/editor/image")
+    public ResponseEntity<?> uploadEditorImage(@RequestParam("file") MultipartFile file) { 
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("success", 0, "message", "Archivo vacío."));
+        }
+        
+        String tempId = "editor_" + UUID.randomUUID().toString().substring(0, 8);
+        String fileName = storagePort.uploadTradeImage(tempId, file);
+        
+        String fileUrl = "http://localhost:8080/api/v1/trades/images/" + fileName; 
+        
+        return ResponseEntity.ok(Map.of(
+            "success", 1,
+            "file", Map.of("url", fileUrl)
+        ));
+    }
+
+    @GetMapping("/images/{filename:.+}")
+    public ResponseEntity<Resource> getImage(@PathVariable String filename) {
+        Resource file = storagePort.loadTradeImage(filename);
+        String contentType = filename.toLowerCase().endsWith(".png") ? MediaType.IMAGE_PNG_VALUE : MediaType.IMAGE_JPEG_VALUE;
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.getFilename() + "\"")
+                .body(file);
+    }
+
+    @GetMapping("/portfolio/{portfolioId}/export/csv")
+    public ResponseEntity<byte[]> exportTradesToCsv(@PathVariable UUID portfolioId, Authentication authentication) {
+        // <-- ESCUDO ACTIVADO -->
+        portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
+        
+        List<Trade> trades = tradeService.getTradesByPortfolioId(portfolioId);
+        StringBuilder csv = new StringBuilder("ID,Fecha,Activo,Direccion,Precio Entrada,Tamano,Estado,PnL Neto,Notas\n");
+        for (Trade trade : trades) {
+            csv.append(trade.id()).append(",").append(trade.entryDate()).append(",")
+               .append(trade.asset()).append(",").append(trade.direction()).append(",")
+               .append(trade.entryPrice()).append(",").append(trade.positionSize()).append(",")
+               .append(trade.status()).append(",").append(trade.pnlNet() != null ? trade.pnlNet() : "0.00").append(",")
+               .append(trade.notes() != null ? trade.notes().replace(",", " ") : "").append("\n");
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=historial_operaciones.csv");
+        headers.set(HttpHeaders.CONTENT_TYPE, "text/csv");
+        return new ResponseEntity<>(csv.toString().getBytes(), headers, HttpStatus.OK);
+    }
+
+    @PostMapping("/portfolio/{portfolioId}/import/csv")
+    public ResponseEntity<Map<String, Object>> importTradesFromCsv(
+            @PathVariable UUID portfolioId,
+            @RequestParam("file") MultipartFile file,
+            Authentication authentication) {
+        
+        // <-- ESCUDO ACTIVADO -->
+        portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
+        
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El archivo está vacío."));
+        }
+
+        try {
+            int importedCount = tradeService.importTradesFromCsv(portfolioId, file);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Se importaron " + importedCount + " operaciones exitosamente.",
+                "importedCount", importedCount
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+        }
+    }
+
+    private TradeResponse toResponseDto(Trade trade) {
+        List<String> images = tradeService.getTradeImages(trade.id());
+        return new TradeResponse(
+                trade.id(), trade.asset(), trade.direction(), trade.status(),
+                trade.entryDate(), trade.entryPrice(), trade.positionSize(), 
+                trade.pnlNet(), 
+                trade.notes(), 
+                images
+        );
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/controller/UserController.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.controller;
+
+import com.gomezcapital.trading_journal.domain.model.User;
+import com.gomezcapital.trading_journal.domain.ports.UserRepositoryPort;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserRepositoryPort userRepositoryPort;
+
+    // Este endpoint mira el token, busca tu correo y devuelve tu Rol real de la Base de Datos
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, String>> getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepositoryPort.findByEmail(email).orElseThrow();
+
+        Map<String, String> response = new HashMap<>();
+        response.put("role", user.role());
+        response.put("id", user.id().toString());
+        
+        return ResponseEntity.ok(response);
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/AdvancedAnalyticsResponse.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+public record AdvancedAnalyticsResponse(
+    // Métricas Base
+    int totalTrades,
+    BigDecimal winRate,
+    BigDecimal profitFactor,
+    
+    // Expectancy y RR (En Dólares y en R-Multiples)
+    BigDecimal expectancyUsd,
+    BigDecimal expectancyR,
+    BigDecimal averageRewardToRiskUsd,
+    BigDecimal averageRewardToRiskR,
+    
+    // Métricas de Riesgo (Drawdowns)
+    BigDecimal maxDrawdownUsd,
+    BigDecimal maxDrawdownPct,
+    BigDecimal averageDrawdownUsd,
+    int recoveryTimeDays,
+    
+    // Rachas y Rendimiento
+    int maxConsecutiveWins,
+    int maxConsecutiveLosses,
+    BigDecimal avgHoldingPeriodHours,
+    BigDecimal sqn, // System Quality Number
+    
+    // Excursiones (MAE / MFE) - En % o en Dólares según lo uses
+    BigDecimal averageMae,
+    BigDecimal averageMfe,
+    
+    // Datos para el Calendario (Mapa de Calor Anual)
+    List<DailySummaryResponse> heatmapData
+) {
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/AuthenticationResponse.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.util.UUID;
+
+
+public record AuthenticationResponse(
+    String token,
+    UUID portfolioId
+) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/CloseTradeRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+// Solo le pedimos al frontend los datos estrictamente necesarios para cerrar la operación.
+public record CloseTradeRequest(
+    BigDecimal exitPrice,
+    LocalDateTime exitDate,
+    BigDecimal pnlNet // si el frontend no lo envía, usaremos la hora actual del servidor.
+) {
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/CreatePortfolioRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+import java.math.BigDecimal;
+public record CreatePortfolioRequest(String name, BigDecimal initialBalance, BigDecimal targetBalance, String currency) {}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/CreateStrategyRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.util.UUID;
+
+public record CreateStrategyRequest(UUID portfolioId, String name, String description, String rules) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/CreateTradeRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+// Solo se pide lo esencial para abrir un trade
+public record CreateTradeRequest(
+    UUID portfolioId,
+    UUID strategyId,
+    UUID playbookId,
+    String asset,
+    String direction, // 'LONG O SHORT'
+    BigDecimal entryPrice,
+    BigDecimal positionSize,
+    BigDecimal takeProfit,
+    BigDecimal stopLoss,
+    String notes 
+) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/DailySummaryResponse.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public record DailySummaryResponse(
+    LocalDate date,
+    int tradeCount,
+    BigDecimal netPnl,
+    boolean isProfitable
+) {
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/ErrorResponse.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+public record ErrorResponse (
+
+    int status,
+    String message,
+    List<String> details,
+    LocalDateTime timestamp
+) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/GoogleLoginRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+public record GoogleLoginRequest(String token) {
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/LoginRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public record LoginRequest(
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El formato del email no es valido")
+    String email,
+
+    @NotBlank(message = "La contraseña es obligatoria")
+    String password
+) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/RegisterRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record RegisterRequest(
+
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El formato del email no es valido")
+    String email,
+
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+    String password
+) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/StrategyResponse.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.util.UUID;
+
+public record StrategyResponse( UUID id, UUID portfolioId, String name, String description, String rules) {
+
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/TradeMetricsResponse.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.math.BigDecimal;
+
+public record TradeMetricsResponse(
+
+    int totalTrades,
+    int winningtrades,
+    int losinfTrades,
+    BigDecimal winRate,
+    BigDecimal profitFactor,
+    BigDecimal totalPnl
+) {
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/TradeResponse.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+
+public record TradeResponse( 
+    UUID id,
+    String asset,
+    String direction,
+    String status,
+    LocalDateTime entryDate,
+    BigDecimal entryPrice,
+    BigDecimal positionSize,
+    BigDecimal pnlNet,
+    String notes, 
+    List<String> images
+) {
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/UpdatePortfolioBalancesRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.math.BigDecimal;
+
+public record UpdatePortfolioBalancesRequest(
+    BigDecimal initialBalance,
+    BigDecimal currentBalance,
+    BigDecimal targetBalance
+) {
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/UpdateTargetRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.math.BigDecimal;
+
+public record UpdateTargetRequest(
+    BigDecimal targetBalance
+) {
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/dto/UpdateTradeRequest.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.dto;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+public record UpdateTradeRequest(
+    UUID strategyId,
+    String asset,
+    String direction,
+    BigDecimal entryPrice,
+    BigDecimal positionSize,
+    BigDecimal takeProfit,
+    BigDecimal stopLoss,
+    BigDecimal exitPrice,
+    BigDecimal pnlNet,
+    BigDecimal maePrice, // <-- NUEVO CAMPO MAE
+    BigDecimal mfePrice, // <-- NUEVO CAMPO MFE
+    String notes
+) {
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/rest/exception/GlobalExceptionHandler.java">
+package com.gomezcapital.trading_journal.infrastructure.rest.exception;
+
+import com.gomezcapital.trading_journal.infrastructure.rest.dto.ErrorResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    // Atrapa los errores de las reglas de negocio
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            ex.getMessage(),
+            List.of(),
+            LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    // Atrapa los errores de validacion de DTOs
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+
+        // Extraemos los mensajes que fallan
+        List<String> errors = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(FieldError::getDefaultMessage)
+            .collect(Collectors.toList());
+
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.BAD_REQUEST.value(),
+            "Error de validacion en los datos enviados",
+            errors,
+            LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    // Atrapa cualquier otro Error no planificado
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+
+        ex.printStackTrace();
+
+
+        ErrorResponse error = new ErrorResponse(
+            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+            "Ocurrio un error interno en el servidor",
+            List.of(ex.getMessage()),
+            LocalDateTime.now()
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/security/JwtAuthenticationFilter.java">
+package com.gomezcapital.trading_journal.infrastructure.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+@Component
+@RequiredArgsConstructor
+
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtService jwtService;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        // Obetener la cabaecera de autorizacion
+        final String authHeader = request.getHeader("Authorization");
+        final String jwt;
+        final String userEmail;
+
+        //  SI no tiene cabecera spring bloquea
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Extraer el token
+        jwt = authHeader.substring(7);
+
+        try {
+
+            // Extraer el email
+            userEmail = jwtService.extractUsername(jwt);
+
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                // Usuario legitimo
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userEmail, null, new ArrayList<>()
+                );
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        } catch (Exception e) {
+            logger.error("Token JWT invalidado o expirado");
+        }
+
+        // Continuar con los filtros
+        filterChain.doFilter(request, response);
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/security/JwtService.java">
+package com.gomezcapital.trading_journal.infrastructure.security;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+
+@Service
+public class JwtService {
+
+    @Value("${application.security.jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${application.security.jwt.expiration}")
+    private long jwtExpiration;
+
+    public String generateToken(String email) {
+
+        Algorithm algorithm = Algorithm.HMAC256(secretKey);
+        return JWT.create()
+                .withSubject(email)
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + jwtExpiration))
+                .withIssuer("GomezCapital")
+                .sign(algorithm);
+    }
+
+    public String extractUsername(String token) {
+        DecodedJWT decodedJWT = JWT. require(Algorithm.HMAC256(secretKey))
+                .withIssuer("GomezCapital")
+                .build()
+                .verify(token);
+        return decodedJWT.getSubject();           
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/security/SecurityConfig.java">
+package com.gomezcapital.trading_journal.infrastructure.security;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            // Activacion del CORS
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // Desactivamos CSFR 
+            .csrf(AbstractHttpConfigurer::disable)
+            // Reglas de las URLs
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/**", "/api/v1/webhooks/**").permitAll() // Rutas de Login/Rgistro son publicas
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/api/v1/trades/images/**").permitAll()
+                .anyRequest().authenticated() // Cualquier otra ruta exige token valido
+            )
+            // Establecer la Stateless
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            // Insertar nuestro filtro JWT antes de el de Spring
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        
+        return http.build();
+    }
+
+   @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+        
+        // Quien puede entrar
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173", "http://localhost:5174"));
+
+        // Metodos HTTP (Estrictamente los que usa la API REST)
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        // CABECERAS ESTRICTAMENTE PERMITIDAS (Seguridad de Alto Nivel)
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization",                 // Para tu Token JWT
+            "Content-Type",                  // Para enviar JSON o Form-Data
+            "X-Requested-With",              // <-- REQUERIDA POR EL EDITOR.JS
+            "Accept",                        // Estándar de navegadores
+            "Origin",                        // Estándar de validación CORS
+            "Access-Control-Request-Method", // Para el pre-flight request
+            "Access-Control-Request-Headers" // Para el pre-flight request
+        ));
+        
+        // Aplicar las reglas a toda la API
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
+    }
+
+    @Bean 
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/infrastructure/storage/LocalFileStorageAdapter.java">
+package com.gomezcapital.trading_journal.infrastructure.storage;
+
+import com.gomezcapital.trading_journal.domain.ports.StoragePort;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
+
+@Slf4j
+@Component
+
+public class LocalFileStorageAdapter implements StoragePort {
+
+    // Carpeta donde se guardaran las imagenes
+    private final String UPLOAD_DIR = "uploads/trades/";
+
+    public LocalFileStorageAdapter() {
+
+        //Si la carpeta no existe al iniciar la app la crea automaticamente
+        File directory = new File(UPLOAD_DIR);
+        if (!directory.exists()) {
+            directory.mkdirs();
+            log.info("Directorio de almacenamiento creado: {}", UPLOAD_DIR);
+        }
+    }
+
+    @Override
+    public String uploadTradeImage(String tradeId, MultipartFile file) {
+
+        try{
+
+            // Extraer la extension original (ej: .png, .jpg)
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename != null && originalFilename.contains(".")
+                    ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                    : ".jpg";
+
+            // Crear un nombre unico para evitar que se sobreescriban
+            String newFileName = tradeId + "_" + UUID.randomUUID().toString().substring(0,8) + extension;
+
+
+            // Guardar fisicamente
+            Path filePath = Paths.get(UPLOAD_DIR + newFileName);
+            Files.write(filePath, file.getBytes());
+
+            log.info("Imagen guardada exitosamente en: {}", filePath);
+
+            // Devolver la ruta relativa
+            return newFileName;
+
+        } catch (IOException e) {
+            log.error("Error al guardar la imagen del trade {}", tradeId, e);
+            throw new RuntimeException("No se pudo procesar la subida de la imagen.");
+        }
+    }
+
+    @Override
+    public Resource loadTradeImage(String filename) {
+
+        try {
+
+            // Ruta exacta del archivo
+            Path file = Paths.get(UPLOAD_DIR).resolve(filename).normalize();
+            Resource resource = new UrlResource(file.toUri());
+
+            // verificar si el archivo existe y si tenemos permiso
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            } else {
+                log.error("No se pudo leer el archivo: {}", filename);
+                throw new RuntimeException("No se pudo leer el archivo: " + filename);   
+            }
+        
+        } catch (Exception e) {
+            log.error("Error al recuperar la imagen: {}", filename, e);
+            throw new RuntimeException("Error al recuperar la imagen", e);
+        } 
+    }
+
+
+    
+}
+</file>
+
+<file path="src/main/java/com/gomezcapital/trading_journal/TradingJournalApplication.java">
+package com.gomezcapital.trading_journal;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import jakarta.annotation.PostConstruct;
+import java.util.TimeZone;
+
+@SpringBootApplication
+public class TradingJournalApplication {
+
+    
+    @PostConstruct
+    public void init() {
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Bogota"));
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(TradingJournalApplication.class, args);
+    }
+}
+</file>
+
+<file path="src/test/java/com/gomezcapital/trading_journal/TradingJournalApplicationTests.java">
+package com.gomezcapital.trading_journal;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class TradingJournalApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
+</file>
+
+<file path=".gitattributes">
+/mvnw text eol=lf
+*.cmd text eol=crlf
+</file>
+
+<file path=".gitignore">
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+# Compilados de Maven (¡Nunca subir los .jar o clases compiladas!)
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+
+# Configuraciones de IDEs (VS Code, IntelliJ, Eclipse)
+.idea/
+.vscode/
+*.iml
+*.project
+*.classpath
+*.prefs
+*.factorypath
+
+# Archivos de Log
+*.log
+
+# Archivos del Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Variables de entorno locales
+.env
+</file>
+
+<file path="Dockerfile">
+# ==========================================
+# ETAPA 1: Compilación (Build)
+# ==========================================
+# Usamos una imagen oficial de Maven con Java 21
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+
+# Establecemos el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiamos el pom.xml primero. Esto es un truco de Docker para cachear 
+# las dependencias y no tener que descargarlas cada vez que cambias un archivo .java
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Ahora copiamos todo el código fuente
+COPY src ./src
+
+# Compilamos el proyecto y generamos el .jar (saltando los tests para mayor velocidad en el despliegue)
+RUN mvn clean package -DskipTests
+
+# ==========================================
+# ETAPA 2: Producción (Run)
+# ==========================================
+# Usamos una imagen de Java 21 JRE "Alpine" (es una versión de Linux ultra ligera y segura)
+FROM eclipse-temurin:21-jre-alpine
+
+# Establecemos el directorio de trabajo
+WORKDIR /app
+
+# Copiamos ÚNICAMENTE el archivo .jar generado en la Etapa 1
+COPY --from=build /app/target/trading-journal-0.0.1-SNAPSHOT.jar app.jar
+
+# Exponemos el puerto 8080 (Cloud Run inyectará el tráfico por aquí)
+EXPOSE 8080
+
+# Comando final que ejecutará el contenedor al encender
+ENTRYPOINT ["java", "-jar", "app.jar"]
+</file>
+
+<file path="mvnw">
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+# ----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# Apache Maven Wrapper startup batch script, version 3.3.4
+#
+# Optional ENV vars
+# -----------------
+#   JAVA_HOME - location of a JDK home dir, required when download maven via java source
+#   MVNW_REPOURL - repo url base for downloading maven distribution
+#   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
+#   MVNW_VERBOSE - true: enable verbose log; debug: trace the mvnw script; others: silence the output
+# ----------------------------------------------------------------------------
+
+set -euf
+[ "${MVNW_VERBOSE-}" != debug ] || set -x
+
+# OS specific support.
+native_path() { printf %s\\n "$1"; }
+case "$(uname)" in
+CYGWIN* | MINGW*)
+  [ -z "${JAVA_HOME-}" ] || JAVA_HOME="$(cygpath --unix "$JAVA_HOME")"
+  native_path() { cygpath --path --windows "$1"; }
+  ;;
+esac
+
+# set JAVACMD and JAVACCMD
+set_java_home() {
+  # For Cygwin and MinGW, ensure paths are in Unix format before anything is touched
+  if [ -n "${JAVA_HOME-}" ]; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ]; then
+      # IBM's JDK on AIX uses strange locations for the executables
+      JAVACMD="$JAVA_HOME/jre/sh/java"
+      JAVACCMD="$JAVA_HOME/jre/sh/javac"
+    else
+      JAVACMD="$JAVA_HOME/bin/java"
+      JAVACCMD="$JAVA_HOME/bin/javac"
+
+      if [ ! -x "$JAVACMD" ] || [ ! -x "$JAVACCMD" ]; then
+        echo "The JAVA_HOME environment variable is not defined correctly, so mvnw cannot run." >&2
+        echo "JAVA_HOME is set to \"$JAVA_HOME\", but \"\$JAVA_HOME/bin/java\" or \"\$JAVA_HOME/bin/javac\" does not exist." >&2
+        return 1
+      fi
+    fi
+  else
+    JAVACMD="$(
+      'set' +e
+      'unset' -f command 2>/dev/null
+      'command' -v java
+    )" || :
+    JAVACCMD="$(
+      'set' +e
+      'unset' -f command 2>/dev/null
+      'command' -v javac
+    )" || :
+
+    if [ ! -x "${JAVACMD-}" ] || [ ! -x "${JAVACCMD-}" ]; then
+      echo "The java/javac command does not exist in PATH nor is JAVA_HOME set, so mvnw cannot run." >&2
+      return 1
+    fi
+  fi
+}
+
+# hash string like Java String::hashCode
+hash_string() {
+  str="${1:-}" h=0
+  while [ -n "$str" ]; do
+    char="${str%"${str#?}"}"
+    h=$(((h * 31 + $(LC_CTYPE=C printf %d "'$char")) % 4294967296))
+    str="${str#?}"
+  done
+  printf %x\\n $h
+}
+
+verbose() { :; }
+[ "${MVNW_VERBOSE-}" != true ] || verbose() { printf %s\\n "${1-}"; }
+
+die() {
+  printf %s\\n "$1" >&2
+  exit 1
+}
+
+trim() {
+  # MWRAPPER-139:
+  #   Trims trailing and leading whitespace, carriage returns, tabs, and linefeeds.
+  #   Needed for removing poorly interpreted newline sequences when running in more
+  #   exotic environments such as mingw bash on Windows.
+  printf "%s" "${1}" | tr -d '[:space:]'
+}
+
+scriptDir="$(dirname "$0")"
+scriptName="$(basename "$0")"
+
+# parse distributionUrl and optional distributionSha256Sum, requires .mvn/wrapper/maven-wrapper.properties
+while IFS="=" read -r key value; do
+  case "${key-}" in
+  distributionUrl) distributionUrl=$(trim "${value-}") ;;
+  distributionSha256Sum) distributionSha256Sum=$(trim "${value-}") ;;
+  esac
+done <"$scriptDir/.mvn/wrapper/maven-wrapper.properties"
+[ -n "${distributionUrl-}" ] || die "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
+
+case "${distributionUrl##*/}" in
+maven-mvnd-*bin.*)
+  MVN_CMD=mvnd.sh _MVNW_REPO_PATTERN=/maven/mvnd/
+  case "${PROCESSOR_ARCHITECTURE-}${PROCESSOR_ARCHITEW6432-}:$(uname -a)" in
+  *AMD64:CYGWIN* | *AMD64:MINGW*) distributionPlatform=windows-amd64 ;;
+  :Darwin*x86_64) distributionPlatform=darwin-amd64 ;;
+  :Darwin*arm64) distributionPlatform=darwin-aarch64 ;;
+  :Linux*x86_64*) distributionPlatform=linux-amd64 ;;
+  *)
+    echo "Cannot detect native platform for mvnd on $(uname)-$(uname -m), use pure java version" >&2
+    distributionPlatform=linux-amd64
+    ;;
+  esac
+  distributionUrl="${distributionUrl%-bin.*}-$distributionPlatform.zip"
+  ;;
+maven-mvnd-*) MVN_CMD=mvnd.sh _MVNW_REPO_PATTERN=/maven/mvnd/ ;;
+*) MVN_CMD="mvn${scriptName#mvnw}" _MVNW_REPO_PATTERN=/org/apache/maven/ ;;
+esac
+
+# apply MVNW_REPOURL and calculate MAVEN_HOME
+# maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
+[ -z "${MVNW_REPOURL-}" ] || distributionUrl="$MVNW_REPOURL$_MVNW_REPO_PATTERN${distributionUrl#*"$_MVNW_REPO_PATTERN"}"
+distributionUrlName="${distributionUrl##*/}"
+distributionUrlNameMain="${distributionUrlName%.*}"
+distributionUrlNameMain="${distributionUrlNameMain%-bin}"
+MAVEN_USER_HOME="${MAVEN_USER_HOME:-${HOME}/.m2}"
+MAVEN_HOME="${MAVEN_USER_HOME}/wrapper/dists/${distributionUrlNameMain-}/$(hash_string "$distributionUrl")"
+
+exec_maven() {
+  unset MVNW_VERBOSE MVNW_USERNAME MVNW_PASSWORD MVNW_REPOURL || :
+  exec "$MAVEN_HOME/bin/$MVN_CMD" "$@" || die "cannot exec $MAVEN_HOME/bin/$MVN_CMD"
+}
+
+if [ -d "$MAVEN_HOME" ]; then
+  verbose "found existing MAVEN_HOME at $MAVEN_HOME"
+  exec_maven "$@"
+fi
+
+case "${distributionUrl-}" in
+*?-bin.zip | *?maven-mvnd-?*-?*.zip) ;;
+*) die "distributionUrl is not valid, must match *-bin.zip or maven-mvnd-*.zip, but found '${distributionUrl-}'" ;;
+esac
+
+# prepare tmp dir
+if TMP_DOWNLOAD_DIR="$(mktemp -d)" && [ -d "$TMP_DOWNLOAD_DIR" ]; then
+  clean() { rm -rf -- "$TMP_DOWNLOAD_DIR"; }
+  trap clean HUP INT TERM EXIT
+else
+  die "cannot create temp dir"
+fi
+
+mkdir -p -- "${MAVEN_HOME%/*}"
+
+# Download and Install Apache Maven
+verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
+verbose "Downloading from: $distributionUrl"
+verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
+
+# select .zip or .tar.gz
+if ! command -v unzip >/dev/null; then
+  distributionUrl="${distributionUrl%.zip}.tar.gz"
+  distributionUrlName="${distributionUrl##*/}"
+fi
+
+# verbose opt
+__MVNW_QUIET_WGET=--quiet __MVNW_QUIET_CURL=--silent __MVNW_QUIET_UNZIP=-q __MVNW_QUIET_TAR=''
+[ "${MVNW_VERBOSE-}" != true ] || __MVNW_QUIET_WGET='' __MVNW_QUIET_CURL='' __MVNW_QUIET_UNZIP='' __MVNW_QUIET_TAR=v
+
+# normalize http auth
+case "${MVNW_PASSWORD:+has-password}" in
+'') MVNW_USERNAME='' MVNW_PASSWORD='' ;;
+has-password) [ -n "${MVNW_USERNAME-}" ] || MVNW_USERNAME='' MVNW_PASSWORD='' ;;
+esac
+
+if [ -z "${MVNW_USERNAME-}" ] && command -v wget >/dev/null; then
+  verbose "Found wget ... using wget"
+  wget ${__MVNW_QUIET_WGET:+"$__MVNW_QUIET_WGET"} "$distributionUrl" -O "$TMP_DOWNLOAD_DIR/$distributionUrlName" || die "wget: Failed to fetch $distributionUrl"
+elif [ -z "${MVNW_USERNAME-}" ] && command -v curl >/dev/null; then
+  verbose "Found curl ... using curl"
+  curl ${__MVNW_QUIET_CURL:+"$__MVNW_QUIET_CURL"} -f -L -o "$TMP_DOWNLOAD_DIR/$distributionUrlName" "$distributionUrl" || die "curl: Failed to fetch $distributionUrl"
+elif set_java_home; then
+  verbose "Falling back to use Java to download"
+  javaSource="$TMP_DOWNLOAD_DIR/Downloader.java"
+  targetZip="$TMP_DOWNLOAD_DIR/$distributionUrlName"
+  cat >"$javaSource" <<-END
+	public class Downloader extends java.net.Authenticator
+	{
+	  protected java.net.PasswordAuthentication getPasswordAuthentication()
+	  {
+	    return new java.net.PasswordAuthentication( System.getenv( "MVNW_USERNAME" ), System.getenv( "MVNW_PASSWORD" ).toCharArray() );
+	  }
+	  public static void main( String[] args ) throws Exception
+	  {
+	    setDefault( new Downloader() );
+	    java.nio.file.Files.copy( java.net.URI.create( args[0] ).toURL().openStream(), java.nio.file.Paths.get( args[1] ).toAbsolutePath().normalize() );
+	  }
+	}
+	END
+  # For Cygwin/MinGW, switch paths to Windows format before running javac and java
+  verbose " - Compiling Downloader.java ..."
+  "$(native_path "$JAVACCMD")" "$(native_path "$javaSource")" || die "Failed to compile Downloader.java"
+  verbose " - Running Downloader.java ..."
+  "$(native_path "$JAVACMD")" -cp "$(native_path "$TMP_DOWNLOAD_DIR")" Downloader "$distributionUrl" "$(native_path "$targetZip")"
+fi
+
+# If specified, validate the SHA-256 sum of the Maven distribution zip file
+if [ -n "${distributionSha256Sum-}" ]; then
+  distributionSha256Result=false
+  if [ "$MVN_CMD" = mvnd.sh ]; then
+    echo "Checksum validation is not supported for maven-mvnd." >&2
+    echo "Please disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties." >&2
+    exit 1
+  elif command -v sha256sum >/dev/null; then
+    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | sha256sum -c - >/dev/null 2>&1; then
+      distributionSha256Result=true
+    fi
+  elif command -v shasum >/dev/null; then
+    if echo "$distributionSha256Sum  $TMP_DOWNLOAD_DIR/$distributionUrlName" | shasum -a 256 -c >/dev/null 2>&1; then
+      distributionSha256Result=true
+    fi
+  else
+    echo "Checksum validation was requested but neither 'sha256sum' or 'shasum' are available." >&2
+    echo "Please install either command, or disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties." >&2
+    exit 1
+  fi
+  if [ $distributionSha256Result = false ]; then
+    echo "Error: Failed to validate Maven distribution SHA-256, your Maven distribution might be compromised." >&2
+    echo "If you updated your Maven version, you need to update the specified distributionSha256Sum property." >&2
+    exit 1
+  fi
+fi
+
+# unzip and move
+if command -v unzip >/dev/null; then
+  unzip ${__MVNW_QUIET_UNZIP:+"$__MVNW_QUIET_UNZIP"} "$TMP_DOWNLOAD_DIR/$distributionUrlName" -d "$TMP_DOWNLOAD_DIR" || die "failed to unzip"
+else
+  tar xzf${__MVNW_QUIET_TAR:+"$__MVNW_QUIET_TAR"} "$TMP_DOWNLOAD_DIR/$distributionUrlName" -C "$TMP_DOWNLOAD_DIR" || die "failed to untar"
+fi
+
+# Find the actual extracted directory name (handles snapshots where filename != directory name)
+actualDistributionDir=""
+
+# First try the expected directory name (for regular distributions)
+if [ -d "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain" ]; then
+  if [ -f "$TMP_DOWNLOAD_DIR/$distributionUrlNameMain/bin/$MVN_CMD" ]; then
+    actualDistributionDir="$distributionUrlNameMain"
+  fi
+fi
+
+# If not found, search for any directory with the Maven executable (for snapshots)
+if [ -z "$actualDistributionDir" ]; then
+  # enable globbing to iterate over items
+  set +f
+  for dir in "$TMP_DOWNLOAD_DIR"/*; do
+    if [ -d "$dir" ]; then
+      if [ -f "$dir/bin/$MVN_CMD" ]; then
+        actualDistributionDir="$(basename "$dir")"
+        break
+      fi
+    fi
+  done
+  set -f
+fi
+
+if [ -z "$actualDistributionDir" ]; then
+  verbose "Contents of $TMP_DOWNLOAD_DIR:"
+  verbose "$(ls -la "$TMP_DOWNLOAD_DIR")"
+  die "Could not find Maven distribution directory in extracted archive"
+fi
+
+verbose "Found extracted Maven distribution directory: $actualDistributionDir"
+printf %s\\n "$distributionUrl" >"$TMP_DOWNLOAD_DIR/$actualDistributionDir/mvnw.url"
+mv -- "$TMP_DOWNLOAD_DIR/$actualDistributionDir" "$MAVEN_HOME" || [ -d "$MAVEN_HOME" ] || die "fail to move MAVEN_HOME"
+
+clean || :
+exec_maven "$@"
+</file>
+
+<file path="mvnw.cmd">
+<# : batch portion
+@REM ----------------------------------------------------------------------------
+@REM Licensed to the Apache Software Foundation (ASF) under one
+@REM or more contributor license agreements.  See the NOTICE file
+@REM distributed with this work for additional information
+@REM regarding copyright ownership.  The ASF licenses this file
+@REM to you under the Apache License, Version 2.0 (the
+@REM "License"); you may not use this file except in compliance
+@REM with the License.  You may obtain a copy of the License at
+@REM
+@REM    http://www.apache.org/licenses/LICENSE-2.0
+@REM
+@REM Unless required by applicable law or agreed to in writing,
+@REM software distributed under the License is distributed on an
+@REM "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+@REM KIND, either express or implied.  See the License for the
+@REM specific language governing permissions and limitations
+@REM under the License.
+@REM ----------------------------------------------------------------------------
+
+@REM ----------------------------------------------------------------------------
+@REM Apache Maven Wrapper startup batch script, version 3.3.4
+@REM
+@REM Optional ENV vars
+@REM   MVNW_REPOURL - repo url base for downloading maven distribution
+@REM   MVNW_USERNAME/MVNW_PASSWORD - user and password for downloading maven
+@REM   MVNW_VERBOSE - true: enable verbose log; others: silence the output
+@REM ----------------------------------------------------------------------------
+
+@IF "%__MVNW_ARG0_NAME__%"=="" (SET __MVNW_ARG0_NAME__=%~nx0)
+@SET __MVNW_CMD__=
+@SET __MVNW_ERROR__=
+@SET __MVNW_PSMODULEP_SAVE=%PSModulePath%
+@SET PSModulePath=
+@FOR /F "usebackq tokens=1* delims==" %%A IN (`powershell -noprofile "& {$scriptDir='%~dp0'; $script='%__MVNW_ARG0_NAME__%'; icm -ScriptBlock ([Scriptblock]::Create((Get-Content -Raw '%~f0'))) -NoNewScope}"`) DO @(
+  IF "%%A"=="MVN_CMD" (set __MVNW_CMD__=%%B) ELSE IF "%%B"=="" (echo %%A) ELSE (echo %%A=%%B)
+)
+@SET PSModulePath=%__MVNW_PSMODULEP_SAVE%
+@SET __MVNW_PSMODULEP_SAVE=
+@SET __MVNW_ARG0_NAME__=
+@SET MVNW_USERNAME=
+@SET MVNW_PASSWORD=
+@IF NOT "%__MVNW_CMD__%"=="" ("%__MVNW_CMD__%" %*)
+@echo Cannot start maven from wrapper >&2 && exit /b 1
+@GOTO :EOF
+: end batch / begin powershell #>
+
+$ErrorActionPreference = "Stop"
+if ($env:MVNW_VERBOSE -eq "true") {
+  $VerbosePreference = "Continue"
+}
+
+# calculate distributionUrl, requires .mvn/wrapper/maven-wrapper.properties
+$distributionUrl = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionUrl
+if (!$distributionUrl) {
+  Write-Error "cannot read distributionUrl property in $scriptDir/.mvn/wrapper/maven-wrapper.properties"
+}
+
+switch -wildcard -casesensitive ( $($distributionUrl -replace '^.*/','') ) {
+  "maven-mvnd-*" {
+    $USE_MVND = $true
+    $distributionUrl = $distributionUrl -replace '-bin\.[^.]*$',"-windows-amd64.zip"
+    $MVN_CMD = "mvnd.cmd"
+    break
+  }
+  default {
+    $USE_MVND = $false
+    $MVN_CMD = $script -replace '^mvnw','mvn'
+    break
+  }
+}
+
+# apply MVNW_REPOURL and calculate MAVEN_HOME
+# maven home pattern: ~/.m2/wrapper/dists/{apache-maven-<version>,maven-mvnd-<version>-<platform>}/<hash>
+if ($env:MVNW_REPOURL) {
+  $MVNW_REPO_PATTERN = if ($USE_MVND -eq $False) { "/org/apache/maven/" } else { "/maven/mvnd/" }
+  $distributionUrl = "$env:MVNW_REPOURL$MVNW_REPO_PATTERN$($distributionUrl -replace "^.*$MVNW_REPO_PATTERN",'')"
+}
+$distributionUrlName = $distributionUrl -replace '^.*/',''
+$distributionUrlNameMain = $distributionUrlName -replace '\.[^.]*$','' -replace '-bin$',''
+
+$MAVEN_M2_PATH = "$HOME/.m2"
+if ($env:MAVEN_USER_HOME) {
+  $MAVEN_M2_PATH = "$env:MAVEN_USER_HOME"
+}
+
+if (-not (Test-Path -Path $MAVEN_M2_PATH)) {
+    New-Item -Path $MAVEN_M2_PATH -ItemType Directory | Out-Null
+}
+
+$MAVEN_WRAPPER_DISTS = $null
+if ((Get-Item $MAVEN_M2_PATH).Target[0] -eq $null) {
+  $MAVEN_WRAPPER_DISTS = "$MAVEN_M2_PATH/wrapper/dists"
+} else {
+  $MAVEN_WRAPPER_DISTS = (Get-Item $MAVEN_M2_PATH).Target[0] + "/wrapper/dists"
+}
+
+$MAVEN_HOME_PARENT = "$MAVEN_WRAPPER_DISTS/$distributionUrlNameMain"
+$MAVEN_HOME_NAME = ([System.Security.Cryptography.SHA256]::Create().ComputeHash([byte[]][char[]]$distributionUrl) | ForEach-Object {$_.ToString("x2")}) -join ''
+$MAVEN_HOME = "$MAVEN_HOME_PARENT/$MAVEN_HOME_NAME"
+
+if (Test-Path -Path "$MAVEN_HOME" -PathType Container) {
+  Write-Verbose "found existing MAVEN_HOME at $MAVEN_HOME"
+  Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
+  exit $?
+}
+
+if (! $distributionUrlNameMain -or ($distributionUrlName -eq $distributionUrlNameMain)) {
+  Write-Error "distributionUrl is not valid, must end with *-bin.zip, but found $distributionUrl"
+}
+
+# prepare tmp dir
+$TMP_DOWNLOAD_DIR_HOLDER = New-TemporaryFile
+$TMP_DOWNLOAD_DIR = New-Item -Itemtype Directory -Path "$TMP_DOWNLOAD_DIR_HOLDER.dir"
+$TMP_DOWNLOAD_DIR_HOLDER.Delete() | Out-Null
+trap {
+  if ($TMP_DOWNLOAD_DIR.Exists) {
+    try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
+    catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
+  }
+}
+
+New-Item -Itemtype Directory -Path "$MAVEN_HOME_PARENT" -Force | Out-Null
+
+# Download and Install Apache Maven
+Write-Verbose "Couldn't find MAVEN_HOME, downloading and installing it ..."
+Write-Verbose "Downloading from: $distributionUrl"
+Write-Verbose "Downloading to: $TMP_DOWNLOAD_DIR/$distributionUrlName"
+
+$webclient = New-Object System.Net.WebClient
+if ($env:MVNW_USERNAME -and $env:MVNW_PASSWORD) {
+  $webclient.Credentials = New-Object System.Net.NetworkCredential($env:MVNW_USERNAME, $env:MVNW_PASSWORD)
+}
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$webclient.DownloadFile($distributionUrl, "$TMP_DOWNLOAD_DIR/$distributionUrlName") | Out-Null
+
+# If specified, validate the SHA-256 sum of the Maven distribution zip file
+$distributionSha256Sum = (Get-Content -Raw "$scriptDir/.mvn/wrapper/maven-wrapper.properties" | ConvertFrom-StringData).distributionSha256Sum
+if ($distributionSha256Sum) {
+  if ($USE_MVND) {
+    Write-Error "Checksum validation is not supported for maven-mvnd. `nPlease disable validation by removing 'distributionSha256Sum' from your maven-wrapper.properties."
+  }
+  Import-Module $PSHOME\Modules\Microsoft.PowerShell.Utility -Function Get-FileHash
+  if ((Get-FileHash "$TMP_DOWNLOAD_DIR/$distributionUrlName" -Algorithm SHA256).Hash.ToLower() -ne $distributionSha256Sum) {
+    Write-Error "Error: Failed to validate Maven distribution SHA-256, your Maven distribution might be compromised. If you updated your Maven version, you need to update the specified distributionSha256Sum property."
+  }
+}
+
+# unzip and move
+Expand-Archive "$TMP_DOWNLOAD_DIR/$distributionUrlName" -DestinationPath "$TMP_DOWNLOAD_DIR" | Out-Null
+
+# Find the actual extracted directory name (handles snapshots where filename != directory name)
+$actualDistributionDir = ""
+
+# First try the expected directory name (for regular distributions)
+$expectedPath = Join-Path "$TMP_DOWNLOAD_DIR" "$distributionUrlNameMain"
+$expectedMvnPath = Join-Path "$expectedPath" "bin/$MVN_CMD"
+if ((Test-Path -Path $expectedPath -PathType Container) -and (Test-Path -Path $expectedMvnPath -PathType Leaf)) {
+  $actualDistributionDir = $distributionUrlNameMain
+}
+
+# If not found, search for any directory with the Maven executable (for snapshots)
+if (!$actualDistributionDir) {
+  Get-ChildItem -Path "$TMP_DOWNLOAD_DIR" -Directory | ForEach-Object {
+    $testPath = Join-Path $_.FullName "bin/$MVN_CMD"
+    if (Test-Path -Path $testPath -PathType Leaf) {
+      $actualDistributionDir = $_.Name
+    }
+  }
+}
+
+if (!$actualDistributionDir) {
+  Write-Error "Could not find Maven distribution directory in extracted archive"
+}
+
+Write-Verbose "Found extracted Maven distribution directory: $actualDistributionDir"
+Rename-Item -Path "$TMP_DOWNLOAD_DIR/$actualDistributionDir" -NewName $MAVEN_HOME_NAME | Out-Null
+try {
+  Move-Item -Path "$TMP_DOWNLOAD_DIR/$MAVEN_HOME_NAME" -Destination $MAVEN_HOME_PARENT | Out-Null
+} catch {
+  if (! (Test-Path -Path "$MAVEN_HOME" -PathType Container)) {
+    Write-Error "fail to move MAVEN_HOME"
+  }
+} finally {
+  try { Remove-Item $TMP_DOWNLOAD_DIR -Recurse -Force | Out-Null }
+  catch { Write-Warning "Cannot remove $TMP_DOWNLOAD_DIR" }
+}
+
+Write-Output "MVN_CMD=$MAVEN_HOME/bin/$MVN_CMD"
+</file>
+
+<file path="pom.xml">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.0.3</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.gomezcapital</groupId>
+	<artifactId>trading-journal</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>trading-journal</name>
+	<description/>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>21</java.version>
+	</properties>
+	<dependencies>
+	    <!-- Spring Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- Auth0 JWT (Librería moderna y limpia para crear tokens) -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>4.4.0</version>
+        </dependency>
+
+		<dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.4</version>
+        </dependency>
+
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.api-client</groupId>
+			<artifactId>google-api-client</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.http-client</groupId>
+			<artifactId>google-http-client-gson</artifactId>
+			<version>1.43.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>25.2.0</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+</file>
+
+<file path="src/main/resources/application.properties">
+# ===============================
+# CONFIGURACIÓN DEL SERVIDOR
+# ===============================
+server.port=${PORT:8080}
+
+# ===============================
+# CONFIGURACIÓN DE BASE DE DATOS (POSTGRESQL - SUPABASE)
+# ===============================
+spring.datasource.url=${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/trading_journal}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME:postgres}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD:1234}
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+
+# IMPORTANTE: Cambiado a 'update' para que cree las tablas la primera vez en la nube
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+
+# ===============================
+# CONFIGURACIÓN DE SEGURIDAD (JWT)
+# ===============================
+application.security.jwt.secret-key=${JWT_SECRET:UnaClaveSecretaMuyLargaYSeguraParaDesarrolloLocal12345!}
+application.security.jwt.expiration=86400000
+
+# ===============================
+# Google OAuth2
+# ===============================
+google.client.id=${GOOGLE_CLIENT_ID:62700038720-n3ght1f3hn93o39n9870undo3h3004dc.apps.googleusercontent.com}
+
+# ===============================
+# Stripe
+# ==============================
+# ===============================
+# CONFIGURACIÓN DE ALMACENAMIENTO (Temporal)
+# ===============================
+file.upload-dir=/tmp/uploads/trades
+</file>
+
+</files>
