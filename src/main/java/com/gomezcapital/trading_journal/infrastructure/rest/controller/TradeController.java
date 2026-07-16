@@ -147,8 +147,9 @@ public class TradeController {
         
         portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
         
+        // <-- VALIDACIÓN PREMIUM Y ADMIN -->
         User user = userRepositoryPort.findByEmail(authentication.getName()).orElseThrow();
-        if (!"ROLE_PRO".equals(user.role())) {
+        if (!"ROLE_PRO".equals(user.role()) && !"ROLE_ADMIN".equals(user.role())) {
              return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
                  "success", false,
                  "error", "La importación automática desde MT5 es una función exclusiva del plan PRO."

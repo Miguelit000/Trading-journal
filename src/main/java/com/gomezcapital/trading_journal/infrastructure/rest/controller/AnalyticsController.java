@@ -34,11 +34,11 @@ public class AnalyticsController {
     public ResponseEntity<?> getAdvancedAnalytics(@PathVariable UUID portfolioId, Authentication authentication) {
         portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
         
-        // VALIDACIÓN DE SEGURIDAD (OWASP Access Control)
+        // VALIDACIÓN DE SEGURIDAD: Permitir PRO y ADMIN
         User user = userRepositoryPort.findByEmail(authentication.getName())
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
                 
-        if (!"ROLE_PRO".equals(user.role())) {
+        if (!"ROLE_PRO".equals(user.role()) && !"ROLE_ADMIN".equals(user.role())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Acceso denegado. Esta métrica requiere una suscripción PRO."));
         }
