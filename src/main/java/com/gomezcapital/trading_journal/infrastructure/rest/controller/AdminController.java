@@ -4,6 +4,9 @@ import com.gomezcapital.trading_journal.application.service.SecurityAuditService
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.gomezcapital.trading_journal.domain.ports.UserRepositoryPort;
+import com.gomezcapital.trading_journal.domain.model.User;
+import java.util.List;
 
 import java.util.Map;
 
@@ -13,6 +16,7 @@ import java.util.Map;
 public class AdminController {
 
     private final SecurityAuditService securityAuditService;
+    private final UserRepositoryPort userRepositoryPort;
 
     // --- PANEL DE CIBERSEGURIDAD ---
 
@@ -38,5 +42,18 @@ public class AdminController {
     public ResponseEntity<?> unblockIp(@PathVariable String ip) {
         securityAuditService.unblockIp(ip);
         return ResponseEntity.ok(Map.of("message", "IP " + ip + " desbloqueada"));
+    }
+
+    @GetMapping("/metrics")
+    public ResponseEntity<?> getBusinessMetrics() {
+        List<User> allUsers = userRepositoryPort.findAll();
+        long totalUsers = allUsers.size();
+        long proUsers = allUsers.stream().filter(u -> "ROLE_PRO".equals(u.role())).count();
+        
+        return ResponseEntity.ok(Map.of(
+            "totalUsers", totalUsers,
+            "proUsers", proUsers,
+            "freeUsers", totalUsers - proUsers
+        ));
     }
 }

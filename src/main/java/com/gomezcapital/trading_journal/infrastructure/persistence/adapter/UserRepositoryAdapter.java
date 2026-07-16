@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
-import java.util.UUID; // <-- ¡ESTE ES EL IMPORT QUE FALTABA!
+import java.util.UUID;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -38,12 +39,26 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
                 .email(user.email())
                 .passwordHash(user.passwordHash())
                 .alias(user.alias())
-                .role(user.role() != null ? user.role() : "ROLE_FREE") // <-- ASIGNAMOS EL ROL
+                .role(user.role() != null ? user.role() : "ROLE_FREE")
                 .build();
         return toDomain(jpaUserRepository.save(entity));
     }
 
+    // <-- NUEVO MÉTODO IMPLEMENTADO -->
+    @Override
+    public List<User> findAll() {
+        return jpaUserRepository.findAll().stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
     private User toDomain(UserEntity entity) {
-        return new User(entity.getId(), entity.getEmail(), entity.getPasswordHash(), entity.getAlias(), entity.getRole()); // <-- RECUPERAMOS EL ROL
+        return new User(
+                entity.getId(), 
+                entity.getEmail(), 
+                entity.getPasswordHash(), 
+                entity.getAlias(), 
+                entity.getRole()
+        );
     }
 }
