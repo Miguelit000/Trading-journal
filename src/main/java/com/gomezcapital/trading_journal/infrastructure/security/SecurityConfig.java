@@ -47,26 +47,31 @@ public class SecurityConfig {
         return http.build();
     }
 
-   @Bean
+  @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
         
-        // Quien puede entrar
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:5173", "http://localhost:5174"));
+        // <-- AQUÍ ESTÁ LA SOLUCIÓN: Agregamos el dominio de producción -->
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3000", 
+            "http://localhost:5173", 
+            "http://localhost:5174",
+            "https://gomez-camipat-web.vercel.app" 
+        ));
 
         // Metodos HTTP (Estrictamente los que usa la API REST)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-        // CABECERAS ESTRICTAMENTE PERMITIDAS (Seguridad de Alto Nivel)
+        // CABECERAS ESTRICTAMENTE PERMITIDAS
         configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization",                 // Para tu Token JWT
-            "Content-Type",                  // Para enviar JSON o Form-Data
-            "X-Requested-With",              // <-- REQUERIDA POR EL EDITOR.JS
-            "Accept",                        // Estándar de navegadores
-            "Origin",                        // Estándar de validación CORS
-            "Access-Control-Request-Method", // Para el pre-flight request
-            "Access-Control-Request-Headers" // Para el pre-flight request
+            "Authorization",                 
+            "Content-Type",                  
+            "X-Requested-With",              
+            "Accept",                        
+            "Origin",                        
+            "Access-Control-Request-Method", 
+            "Access-Control-Request-Headers" 
         ));
         
         // Aplicar las reglas a toda la API
