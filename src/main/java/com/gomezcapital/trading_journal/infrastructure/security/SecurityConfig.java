@@ -22,6 +22,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final IpBlockFilter ipBlockFilter; // <-- AÑADIDO: Inyectamos el escudo perimetral
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -30,19 +31,20 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             // Desactivamos CSFR 
             .csrf(AbstractHttpConfigurer::disable)
-            // Reglas de las URLs
+            // Reglas de las URLs (Respetando tus rutas originales)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**", "/api/v1/webhooks/**").permitAll() // Rutas de Login/Rgistro son publicas
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/v1/trades/images/**").permitAll()
-                .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/api/v1/trades/images/**").permitAll() // Tus imágenes siguen siendo públicas
+                .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN") // Panel de ciberseguridad
                 .anyRequest().authenticated() // Cualquier otra ruta exige token valido
             )
             // Establecer la Stateless
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            // Insertar nuestro filtro JWT antes de el de Spring
+            // Insertar nuestros filtros: PRIMERO el de IP (Escudo), LUEGO el JWT
+            .addFilterBefore(ipBlockFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
@@ -53,7 +55,6 @@ public class SecurityConfig {
 
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
         
-        // <-- AQUÍ ESTÁ LA SOLUCIÓN: Agregamos el dominio de producción -->
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000", 
             "http://localhost:5173", 
