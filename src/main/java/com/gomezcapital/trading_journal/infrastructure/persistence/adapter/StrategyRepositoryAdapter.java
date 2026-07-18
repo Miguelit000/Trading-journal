@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -42,6 +43,19 @@ public class StrategyRepositoryAdapter implements StrategyRepositoryPort {
                     entity.getId(), entity.getPortfolioId(),
                     entity.getName(), entity.getDescription(),entity.getRules()
                 )).toList();
+    }
+
+    @Override
+    public Optional<Strategy> findById(UUID id) {
+        return repository.findById(id).map(entity -> new Strategy(
+            entity.getId(), entity.getPortfolioId(),
+            entity.getName(), entity.getDescription(), entity.getRules()
+        ));
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        repository.deleteById(id);
     }
     
 }

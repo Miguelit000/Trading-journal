@@ -86,4 +86,9 @@ public class PortfolioService {
         );
         return portfolioRepositoryPort.save(updatedPortfolio);
     }
+
+    public void deletePortfolio(UUID portfolioId, String userEmail) {
+        validatePortfolioOwnership(portfolioId, userEmail); 
+        portfolioRepositoryPort.deleteById(portfolioId);
+    }
 }

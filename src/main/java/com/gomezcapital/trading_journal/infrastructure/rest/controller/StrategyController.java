@@ -49,4 +49,10 @@ public class StrategyController {
             strategy.name(), strategy.description(), strategy.rules()
         );
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteStrategy(@PathVariable UUID id, Authentication authentication) {
+        strategyService.deleteStrategy(id, authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
 }

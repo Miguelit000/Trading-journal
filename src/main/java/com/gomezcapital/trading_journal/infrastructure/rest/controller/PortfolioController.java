@@ -54,4 +54,10 @@ public class PortfolioController {
                 id, request.initialBalance(), request.currentBalance(), request.targetBalance(), authentication.getName()
         ));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePortfolio(@PathVariable UUID id, Authentication authentication) {
+        portfolioService.deletePortfolio(id, authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
 }

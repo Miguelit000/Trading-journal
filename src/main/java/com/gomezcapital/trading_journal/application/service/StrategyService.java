@@ -29,4 +29,15 @@ public class StrategyService {
     public List<Strategy> getStrategiesByPortfolioId(UUID portfolioId) {
         return strategyRepositoryPort.findByPortfolioId(portfolioId);
     }
+
+    private final PortfolioService portfolioService; // Asegúrate de inyectarlo en el constructor
+
+    public void deleteStrategy(UUID strategyId, String userEmail) {
+        Strategy strategy = strategyRepositoryPort.findById(strategyId)
+            .orElseThrow(() -> new IllegalArgumentException("Estrategia no encontrada."));
+        
+        // El escudo perimetral valida que la estrategia pertenezca a un portafolio del usuario
+        portfolioService.validatePortfolioOwnership(strategy.portfolioId(), userEmail);
+        strategyRepositoryPort.deleteById(strategyId);
+    }
 }
