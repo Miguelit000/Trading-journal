@@ -7,6 +7,8 @@ import com.gomezcapital.trading_journal.infrastructure.persistence.entity.TradeE
 import com.gomezcapital.trading_journal.infrastructure.persistence.repository.TradeJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +42,16 @@ public class TradeRepositoryAdapter implements TradeRepositoryPort {
     @Override
     public void deleteById(UUID id) {
         tradeJpaRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Trade> findByPortfolioIdPaginated(UUID portfolioId, int page, int size) {
+        // Ordenamos desde la base de datos para traer siempre las operaciones más recientes primero
+        PageRequest pageRequest = PageRequest.of(page, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "entryDate"));
+        
+        return tradeJpaRepository.findByPortfolioId(portfolioId, pageRequest).stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     private TradeEntity toEntity(Trade trade) {

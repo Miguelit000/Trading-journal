@@ -1,23 +1,22 @@
 package com.gomezcapital.trading_journal.infrastructure.rest.exception;
 
 import com.gomezcapital.trading_journal.infrastructure.rest.dto.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+@Slf4j // <-- Añadimos esto para los logs privados
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Atrapa los errores de las reglas de negocio
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -26,15 +25,11 @@ public class GlobalExceptionHandler {
             List.of(),
             LocalDateTime.now()
         );
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    // Atrapa los errores de validacion de DTOs
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-
-        // Extraemos los mensajes que fallan
         List<String> errors = ex.getBindingResult()
             .getFieldErrors()
             .stream()
@@ -47,26 +42,23 @@ public class GlobalExceptionHandler {
             errors,
             LocalDateTime.now()
         );
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    // Atrapa cualquier otro Error no planificado
+    // <-- MÉTODO BLINDADO -->
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        // 1. Logueamos el error real de forma interna para que solo tú lo veas en la consola/servidor
+        log.error("🔴 [ALERTA] Error interno del servidor: ", ex);
 
-        ex.printStackTrace();
-
-
+        // 2. Le devolvemos al usuario un mensaje genérico e inofensivo
         ErrorResponse error = new ErrorResponse(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "Ocurrio un error interno en el servidor",
-            List.of(ex.getMessage()),
+            "Ocurrió un error interno en el servidor.",
+            List.of("Por favor, intenta más tarde o contacta a soporte si el problema persiste."), // Ya no usamos ex.getMessage()
             LocalDateTime.now()
         );
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
-
-    
 }

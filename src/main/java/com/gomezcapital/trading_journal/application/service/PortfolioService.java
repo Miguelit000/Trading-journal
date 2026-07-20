@@ -88,7 +88,19 @@ public class PortfolioService {
     }
 
     public void deletePortfolio(UUID portfolioId, String userEmail) {
-        validatePortfolioOwnership(portfolioId, userEmail); 
-        portfolioRepositoryPort.deleteById(portfolioId);
+    // 1. Validamos que el portafolio le pertenezca al usuario
+    validatePortfolioOwnership(portfolioId, userEmail); 
+    
+    // 2. Buscamos el portafolio en la base de datos
+    Portfolio portfolio = portfolioRepositoryPort.findById(portfolioId)
+            .orElseThrow(() -> new IllegalArgumentException("Portafolio no encontrado."));
+            
+    // 3. Bloqueamos la eliminación si es el Portafolio Principal
+    if ("Portafolio Principal".equalsIgnoreCase(portfolio.name())) {
+        throw new IllegalArgumentException("Acción denegada: No puedes borrar tu Portafolio Principal.");
     }
+
+    // 4. Si pasa las validaciones, lo eliminamos
+    portfolioRepositoryPort.deleteById(portfolioId);
+}
 }

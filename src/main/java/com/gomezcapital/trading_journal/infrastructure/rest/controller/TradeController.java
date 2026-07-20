@@ -49,11 +49,18 @@ public class TradeController {
     }
 
     @GetMapping("/portfolio/{portfolioId}")
-    public ResponseEntity<List<TradeResponse>> getTradesByPortfolio(@PathVariable UUID portfolioId, Authentication authentication) {
+    public ResponseEntity<List<TradeResponse>> getTradesByPortfolio(
+            @PathVariable UUID portfolioId,
+            @RequestParam(defaultValue = "0") int page, // <-- Parámetro de página
+            @RequestParam(defaultValue = "50") int size, // <-- Límite seguro
+            Authentication authentication) {
+            
         portfolioService.validatePortfolioOwnership(portfolioId, authentication.getName());
         
-        List<TradeResponse> responseList = tradeService.getTradesByPortfolioId(portfolioId)
+        // Llamamos al nuevo método paginado
+        List<TradeResponse> responseList = tradeService.getTradesByPortfolioIdPaginated(portfolioId, page, size)
                 .stream().map(this::toResponseDto).toList();
+                
         return ResponseEntity.ok(responseList);
     }
 

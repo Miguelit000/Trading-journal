@@ -67,6 +67,10 @@ public class TradeService {
         return tradeRepositoryPort.findByPortfolioId(portfolioId);
     }
 
+    public List<Trade> getTradesByPortfolioIdPaginated(UUID portfolioId, int page, int size) {
+        return tradeRepositoryPort.findByPortfolioIdPaginated(portfolioId, page, size);
+    }
+
     @Transactional
     public Trade closeTrade(UUID tradeId, BigDecimal exitPrice, LocalDateTime exitDate, BigDecimal pnlNet) {
         Trade existingTrade = tradeRepositoryPort.findById(tradeId)

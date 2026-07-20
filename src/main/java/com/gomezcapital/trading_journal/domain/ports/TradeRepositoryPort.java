@@ -11,4 +11,5 @@ public interface TradeRepositoryPort {
     Optional<Trade> findById(UUID id);
     List<Trade> findByPortfolioId(UUID portfolioId);
     void deleteById(UUID id);
+    List<Trade> findByPortfolioIdPaginated(UUID portfolioId, int page, int size);
 }
