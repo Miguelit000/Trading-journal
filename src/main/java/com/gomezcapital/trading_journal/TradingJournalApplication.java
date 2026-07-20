@@ -17,4 +17,4 @@ public class TradingJournalApplication {
     public static void main(String[] args) {
         SpringApplication.run(TradingJournalApplication.class, args);
     }
-}
+} 

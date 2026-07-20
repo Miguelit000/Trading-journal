@@ -22,7 +22,7 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final IpBlockFilter ipBlockFilter; // <-- AÑADIDO: Inyectamos el escudo perimetral
+    private final IpBlockFilter ipBlockFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,26 +31,26 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             // Desactivamos CSFR 
             .csrf(AbstractHttpConfigurer::disable)
-            // Reglas de las URLs (Respetando tus rutas originales)
+            // Reglas de las URLs
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/**", "/api/v1/webhooks/**").permitAll() // Rutas de Login/Rgistro son publicas
+                .requestMatchers("/api/v1/auth/**", "/api/v1/webhooks/**").permitAll() 
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/v1/trades/images/**").permitAll() // Tus imágenes siguen siendo públicas
-                .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN") // Panel de ciberseguridad
-                .anyRequest().authenticated() // Cualquier otra ruta exige token valido
+                .requestMatchers("/api/v1/trades/images/**").permitAll() 
+                .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN") 
+                .anyRequest().authenticated() 
             )
             // Establecer la Stateless
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            // Insertar nuestros filtros: PRIMERO el de IP (Escudo), LUEGO el JWT
+            // Insertar filtros
             .addFilterBefore(ipBlockFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         
         return http.build();
     }
 
-  @Bean
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
@@ -62,10 +62,10 @@ public class SecurityConfig {
             "https://gomez-camipat-web.vercel.app" 
         ));
 
-        // Metodos HTTP (Estrictamente los que usa la API REST)
+        // Metodos HTTP
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-        // CABECERAS ESTRICTAMENTE PERMITIDAS
+        // CABECERAS PERMITIDAS
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization",                 
             "Content-Type",                  
@@ -76,6 +76,9 @@ public class SecurityConfig {
             "Access-Control-Request-Headers" 
         ));
         
+        // 🚨 ESTO ES LO QUE FALTABA: Permitir que viajen las cookies y credenciales 🚨
+        configuration.setAllowCredentials(true);
+
         // Aplicar las reglas a toda la API
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
