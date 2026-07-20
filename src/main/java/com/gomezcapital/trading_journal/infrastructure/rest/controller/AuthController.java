@@ -43,6 +43,22 @@ public class AuthController {
                 .body(new AuthenticationResponse(null, response.portfolioId()));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        // Creamos una cookie idéntica pero con Max-Age 0 para que el navegador la destruya inmediatamente
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .secure(true) // Recuerda: true para producción
+                .path("/")
+                .maxAge(0) 
+                .sameSite("None")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .build();
+    }
+
     @PostMapping("/google")
     public ResponseEntity<AuthenticationResponse> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
         AuthenticationResponse response = authService.authenticateWithGoogle(request.token());
@@ -54,6 +70,9 @@ public class AuthController {
                 .body(new AuthenticationResponse(null, response.portfolioId()));
     }
 
+
+    
+
     // Este es para produccion
     private ResponseCookie buildSecureCookie(String token) {
         return ResponseCookie.from("jwt", token)
@@ -64,8 +83,8 @@ public class AuthController {
                 .sameSite("None")  // Permite que Vercel lea la cookie del backend
                 .build();
     }
-
-    /*  Esto es para probar en local
+    
+/* 
 
     private ResponseCookie buildSecureCookie(String token) {
         return ResponseCookie.from("jwt", token)
@@ -76,6 +95,6 @@ public class AuthController {
                 .sameSite("Lax")   // 🔴 CAMBIO: "Lax" es el estándar que permite localhost cruzado
                 .build();
     }
-
-    */
+*/
+    
 }

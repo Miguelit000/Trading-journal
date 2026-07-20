@@ -23,14 +23,19 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final IpBlockFilter ipBlockFilter;
+    private final RateLimitFilter rateLimitFilter; // Opcional, asumo que lo inyectaste en el paso anterior
+    private final CsrfDefenseFilter csrfDefenseFilter; // <-- 1. INYECTAMOS EL NUEVO FILTRO
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             // Activacion del CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // Desactivamos CSFR 
+            
+            // La protección clásica de CSRF se desactiva porque dependemos de cookies cross-domain y APIs sin estado.
+            // En su lugar, usamos nuestro propio CsrfDefenseFilter.
             .csrf(AbstractHttpConfigurer::disable)
+            
             // Reglas de las URLs
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**", "/api/v1/webhooks/**").permitAll() 
@@ -39,20 +44,21 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/admin/**").hasAuthority("ROLE_ADMIN") 
                 .anyRequest().authenticated() 
             )
-            // Establecer la Stateless
+            // Establecer API sin estado
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            // Insertar filtros
-            .addFilterBefore(ipBlockFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            // 2. ORDEN DE LOS FILTROS (Importante para la cascada defensiva)
+            .addFilterBefore(ipBlockFilter, UsernamePasswordAuthenticationFilter.class) // Nivel 1: Cortafuegos de IP
+            .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class) // Nivel 2: Antispam/DDoS
+            .addFilterBefore(csrfDefenseFilter, UsernamePasswordAuthenticationFilter.class) // Nivel 3: Validar que no sea un ataque CSRF
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // Nivel 4: Validar Identidad (Cookies)
         
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
         
         configuration.setAllowedOrigins(Arrays.asList(
@@ -62,10 +68,8 @@ public class SecurityConfig {
             "https://gomez-camipat-web.vercel.app" 
         ));
 
-        // Metodos HTTP
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-        // CABECERAS PERMITIDAS
         configuration.setAllowedHeaders(Arrays.asList(
             "Authorization",                 
             "Content-Type",                  
@@ -76,10 +80,8 @@ public class SecurityConfig {
             "Access-Control-Request-Headers" 
         ));
         
-        // 🚨 ESTO ES LO QUE FALTABA: Permitir que viajen las cookies y credenciales 🚨
         configuration.setAllowCredentials(true);
 
-        // Aplicar las reglas a toda la API
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         
