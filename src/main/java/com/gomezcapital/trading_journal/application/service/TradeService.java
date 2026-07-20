@@ -32,6 +32,7 @@ public class TradeService {
     private final TradeImageRepositoryPort tradeImageRepositoryPort;
     private final PortfolioRepositoryPort portfolioRepositoryPort;
     private final UserRepositoryPort userRepositoryPort;
+    private final XssSanitizerService xssSanitizerService;
 
     public Trade logNewTrade(Trade trade) {
         validateNewTrade(trade);
@@ -58,7 +59,8 @@ public class TradeService {
                 trade.takeProfit(), trade.stopLoss(), defaultToZero(trade.plannedRr()),
                 defaultToZero(trade.actualRr()), null, null,
                 defaultToZero(trade.commissions()), defaultToZero(trade.feesAndSwaps()),
-                BigDecimal.ZERO, BigDecimal.ZERO, trade.notes()
+                BigDecimal.ZERO, BigDecimal.ZERO, 
+                xssSanitizerService.sanitizeEditorJsJson(trade.notes())
         );
         return tradeRepositoryPort.save(tradeToSave);
     }
@@ -118,7 +120,8 @@ public class TradeService {
                 request.mfePrice(), request.maePrice(), // <-- AQUÍ INSERTAMOS LOS NUEVOS PRECIOS
                 existingTrade.commissions(), existingTrade.feesAndSwaps(), 
                 request.pnlNet() != null ? request.pnlNet() : existingTrade.pnlGross(),
-                request.pnlNet() != null ? request.pnlNet() : existingTrade.pnlNet(), request.notes()
+                request.pnlNet() != null ? request.pnlNet() : existingTrade.pnlNet(),
+                xssSanitizerService.sanitizeEditorJsJson(request.notes())
         );
 
         return tradeRepositoryPort.save(updatedTrade);
