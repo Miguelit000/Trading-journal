@@ -185,10 +185,22 @@ public class TradeController {
     private TradeResponse toResponseDto(Trade trade) {
         List<String> images = tradeService.getTradeImages(trade.id());
         return new TradeResponse(
-                trade.id(), trade.asset(), trade.direction(), trade.status(),
-                trade.entryDate(), trade.entryPrice(), trade.positionSize(), 
+                trade.id(), 
+                trade.asset(), 
+                trade.direction(), 
+                trade.status(),
+                trade.entryDate(), 
+                trade.exitDate(),        
+                trade.entryPrice(), 
+                trade.exitPrice(),       
+                trade.positionSize(), 
+                trade.takeProfit(),      
+                trade.stopLoss(),        
                 trade.pnlNet(), 
-                trade.notes(), 
+                trade.maePrice(),        
+                trade.mfePrice(),        
+                trade.strategyId(),      
+                trade.notes(),
                 images
         );
     }

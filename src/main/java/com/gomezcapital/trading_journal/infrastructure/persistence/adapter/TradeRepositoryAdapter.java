@@ -65,7 +65,7 @@ public class TradeRepositoryAdapter implements TradeRepositoryPort {
         
         return TradeEntity.builder()
                 .id(trade.id())
-                .portfolio(portfolioRef) // <-- CAMBIO
+                .portfolio(portfolioRef)
                 .strategyId(trade.strategyId())
                 .playbookId(trade.playbookId())
                 .asset(trade.asset())
@@ -78,10 +78,15 @@ public class TradeRepositoryAdapter implements TradeRepositoryPort {
                 .positionSize(trade.positionSize())
                 .takeProfit(trade.takeProfit())
                 .stopLoss(trade.stopLoss())
+                .plannedRr(trade.plannedRr())       
+                .actualRr(trade.actualRr())         
+                .mfePrice(trade.mfePrice())         
+                .maePrice(trade.maePrice())         
+                .commissions(trade.commissions())   
+                .feesAndSwaps(trade.feesAndSwaps()) 
                 .pnlGross(trade.pnlGross())
                 .pnlNet(trade.pnlNet())
                 .notes(trade.notes())
-                // ELIMINADO imageName
                 .build();
     }
 
